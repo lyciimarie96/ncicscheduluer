@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>24/7 Staffing Scheduler</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2f;
+      --panel-2: #18223c;
+      --panel-3: #202d4d;
+      --text: #eef3ff;
+      --muted: #9eacc8;
+      --line: #2a385d;
+      --accent: #7c9cff;
+      --accent-2: #8ee3c4;
+      --danger: #ff7d91;
+      --warning: #ffd37d;
+      --success: #78d7a7;
+      --shadow: 0 18px 45px rgba(0,0,0,.28);
+      --radius: 16px;
+      --label-width: 188px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(124,156,255,.14), transparent 34%),
+        radial-gradient(circle at top right, rgba(142,227,196,.09), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform .12s ease, opacity .12s ease, background .12s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #0e162a;
+      color: var(--text);
+      padding: 10px 11px;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,156,255,.14);
+    }
+
+    .app-shell {
+      width: min(1720px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 38px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 5px; font-size: clamp(1.5rem, 2vw, 2.15rem); }
+    h2 { margin-bottom: 5px; font-size: 1.15rem; }
+    h3 { font-size: 1rem; margin-bottom: 10px; }
+    .subtitle { color: var(--muted); margin-bottom: 0; }
+
+    .header-actions, .button-row {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 14px;
+      background: var(--panel-3);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #071022;
+      font-weight: 750;
+    }
+
+    .btn.success {
+      background: var(--accent-2);
+      border-color: var(--accent-2);
+      color: #071a17;
+      font-weight: 750;
+    }
+
+    .btn.danger {
+      color: #ffdce2;
+      background: rgba(255,125,145,.12);
+      border-color: rgba(255,125,145,.34);
+    }
+
+    .btn.ghost {
+      background: transparent;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(24,34,60,.98), rgba(18,26,47,.98));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      padding: 17px 18px 13px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .panel-body { padding: 16px 18px 18px; }
+
+    .muted, .helper { color: var(--muted); }
+    .helper { font-size: .84rem; line-height: 1.42; margin: 5px 0 0; }
+
+    .roster-list {
+      display: grid;
+      gap: 9px;
+      max-height: 625px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+
+    .employee-card {
+      display: grid;
+      grid-template-columns: 12px minmax(0,1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      background: rgba(11,16,32,.55);
+      padding: 11px;
+      border-radius: 12px;
+    }
+
+    .employee-color {
+      width: 10px;
+      height: 46px;
+      border-radius: 999px;
+    }
+
+    .employee-name {
+      font-weight: 760;
+      margin-bottom: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .employee-meta {
+      color: var(--muted);
+      font-size: .8rem;
+      line-height: 1.35;
+    }
+
+    .icon-button {
+      width: 34px;
+      height: 34px;
+      display: inline-grid;
+      place-items: center;
+      background: var(--panel-3);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 32px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+
+    .day-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 14px 16px 0;
+    }
+
+    .day-tab {
+      padding: 9px 12px;
+      background: #0e162a;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+
+    .day-tab.active {
+      color: #071022;
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 800;
+    }
+
+    .schedule-scroll {
+      overflow-x: auto;
+      padding: 14px 16px 18px;
+    }
+
+    .schedule {
+      min-width: 1020px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      overflow: hidden;
+      background: #0c1426;
+    }
+
+    .timeline-header {
+      display: grid;
+      grid-template-columns: var(--label-width) minmax(780px,1fr);
+      min-height: 46px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .timeline-title {
+      padding: 13px 14px;
+      color: var(--muted);
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      border-right: 1px solid var(--line);
+    }
+
+    .time-scale {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      position: relative;
+    }
+
+    .time-label {
+      padding-top: 13px;
+      text-align: left;
+      padding-left: 7px;
+      color: var(--muted);
+      font-size: .77rem;
+      border-left: 1px solid rgba(42,56,93,.75);
+    }
+
+    .schedule-row {
+      display: grid;
+      grid-template-columns: var(--label-width) minmax(780px,1fr);
+      min-height: 55px;
+      border-bottom: 1px solid rgba(42,56,93,.72);
+    }
+
+    .schedule-row:last-child { border-bottom: 0; }
+
+    .row-label {
+      padding: 10px 13px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .row-label strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: .9rem;
+    }
+
+    .row-label span {
+      color: var(--muted);
+      font-size: .75rem;
+      margin-top: 2px;
+    }
+
+    .bar-lane {
+      position: relative;
+      background-image: linear-gradient(to right, rgba(42,56,93,.7) 1px, transparent 1px);
+      background-size: calc(100% / 12) 100%;
+      min-width: 0;
+    }
+
+    .shift-bar {
+      position: absolute;
+      top: 9px;
+      height: 36px;
+      border-radius: 9px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      min-width: 9px;
+      color: #071022;
+      font-size: .78rem;
+      font-weight: 800;
+      overflow: hidden;
+      white-space: nowrap;
+      box-shadow: 0 4px 13px rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.4);
+    }
+
+    .staffing-section {
+      border-top: 1px solid var(--line);
+      padding: 16px;
+    }
+
+    .staffing-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(68px,1fr));
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 3px;
+    }
+
+    .staff-cell {
+      min-width: 68px;
+      background: #0e162a;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 8px;
+      text-align: center;
+    }
+
+    .staff-cell.low {
+      border-color: rgba(255,125,145,.55);
+      background: rgba(255,125,145,.10);
+    }
+
+    .staff-cell.good {
+      border-color: rgba(120,215,167,.42);
+      background: rgba(120,215,167,.08);
+    }
+
+    .staff-time {
+      font-size: .72rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .staff-count {
+      font-size: 1.35rem;
+      font-weight: 850;
+      line-height: 1.2;
+      margin-top: 4px;
+    }
+
+    .staff-range {
+      font-size: .67rem;
+      color: var(--muted);
+      min-height: 15px;
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .version-list {
+      display: grid;
+      gap: 8px;
+      max-height: 310px;
+      overflow: auto;
+    }
+
+    .version-card {
+      border: 1px solid var(--line);
+      background: #0e162a;
+      border-radius: 11px;
+      padding: 11px;
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 9px;
+      align-items: center;
+    }
+
+    .version-card strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .version-card span { color: var(--muted); font-size: .76rem; }
+
+    .compare-controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto;
+      align-items: end;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .field label, .field-label {
+      display: block;
+      color: var(--muted);
+      font-size: .78rem;
+      margin: 0 0 5px;
+    }
+
+    .compare-scroll { overflow: auto; max-height: 330px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: center;
+      font-size: .78rem;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--panel-2);
+      color: var(--muted);
+      z-index: 2;
+    }
+
+    td:first-child, th:first-child {
+      text-align: left;
+      position: sticky;
+      left: 0;
+      background: var(--panel-2);
+      z-index: 1;
+    }
+
+    .delta-positive { color: var(--success); font-weight: 800; }
+    .delta-negative { color: var(--danger); font-weight: 800; }
+    .delta-zero { color: var(--muted); }
+
+    dialog {
+      width: min(680px, calc(100% - 26px));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 0;
+      box-shadow: 0 30px 85px rgba(0,0,0,.55);
+    }
+
+    dialog::backdrop { background: rgba(3,6,15,.72); backdrop-filter: blur(4px); }
+
+    .modal-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-head h2 { margin: 0; }
+    .modal-body { padding: 18px 20px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px;
+    }
+
+    .span-2 { grid-column: span 2; }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 7px;
+    }
+
+    .day-check {
+      position: relative;
+    }
+
+    .day-check input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .day-check label {
+      display: block;
+      text-align: center;
+      padding: 10px 4px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--muted);
+      cursor: pointer;
+      background: #0e162a;
+      font-size: .8rem;
+    }
+
+    .day-check input:checked + label {
+      background: rgba(124,156,255,.18);
+      border-color: var(--accent);
+      color: var(--text);
+      font-weight: 750;
+    }
+
+    .per-day-editor {
+      display: grid;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .per-day-row {
+      display: grid;
+      grid-template-columns: 95px 1fr 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .per-day-row.disabled { opacity: .38; }
+
+    .modal-actions {
+      padding: 15px 20px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 9px;
+    }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 13px;
+    }
+
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px;
+      background: #0e162a;
+    }
+
+    .kpi span { color: var(--muted); font-size: .74rem; }
+    .kpi strong { display: block; font-size: 1.15rem; margin-top: 3px; }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #eaf0ff;
+      color: #0b1020;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-weight: 750;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: .2s ease;
+      z-index: 20;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .roster-list { max-height: 330px; }
+      .lower-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .app-shell { width: min(100% - 14px, 1720px); padding-top: 12px; }
+      header { flex-direction: column; }
+      .header-actions { width: 100%; }
+      .header-actions .btn { flex: 1; }
+      .form-grid { grid-template-columns: 1fr; }
+      .span-2 { grid-column: span 1; }
+      .days-grid { grid-template-columns: repeat(4, 1fr); }
+      .compare-controls { grid-template-columns: 1fr 1fr; }
+      .compare-controls .btn { grid-column: span 2; }
+      .kpi-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div>
+        <h1>24/7 Staffing Scheduler</h1>
+        <p class="subtitle">Build shift bid options, inspect coverage, and compare saved schedule versions.</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn ghost" id="importBtn">Import</button>
+        <button class="btn ghost" id="exportBtn">Export</button>
+        <button class="btn danger" id="clearBtn">Clear draft</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden />
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Employees</h2>
+            <div class="muted" id="employeeCount">0 employees</div>
+          </div>
+          <button class="btn primary" id="addEmployeeBtn">Add employee</button>
+        </div>
+        <div class="panel-body">
+          <div class="kpi-row">
+            <div class="kpi"><span>Days</span><strong id="daysCount">0</strong></div>
+            <div class="kpi"><span>Swings</span><strong id="swingsCount">0</strong></div>
+            <div class="kpi"><span>Graves</span><strong id="gravesCount">0</strong></div>
+          </div>
+          <div class="roster-list" id="rosterList"></div>
+          <div class="button-row" style="margin-top:12px">
+            <button class="btn" id="loadDemoBtn">Load example staff</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Weekly coverage</h2>
+            <div class="muted">Each view runs from 6:00 AM to 6:00 AM the next day.</div>
+          </div>
+          <div class="field" style="min-width:165px">
+            <label for="minimumStaffing">Low staffing threshold</label>
+            <input id="minimumStaffing" type="number" min="0" max="99" value="3" />
+          </div>
+        </div>
+
+        <div class="day-tabs" id="dayTabs"></div>
+
+        <div class="schedule-scroll">
+          <div class="schedule">
+            <div class="timeline-header">
+              <div class="timeline-title" id="timelineTitle">Employees</div>
+              <div class="time-scale" id="timeScale"></div>
+            </div>
+            <div id="scheduleRows"></div>
+          </div>
+        </div>
+
+        <div class="staffing-section">
+          <h3>Staffing by two hour block</h3>
+          <p class="helper">The large number is the minimum staffing level during that block. When staffing changes inside the block, the maximum is also shown.</p>
+          <div class="staffing-grid" id="staffingGrid"></div>
+        </div>
+      </section>
+    </main>
+
+    <section class="lower-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Saved schedule versions</h2>
+            <div class="muted">Save a snapshot before testing another layout.</div>
+          </div>
+          <button class="btn success" id="saveVersionBtn">Save version</button>
+        </div>
+        <div class="panel-body">
+          <div class="version-list" id="versionList"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Compare staffing</h2>
+            <div class="muted">Compare minimum coverage in every two hour block.</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="compare-controls">
+            <div class="field">
+              <label for="compareA">Schedule A</label>
+              <select id="compareA"></select>
+            </div>
+            <div style="padding-bottom:10px;color:var(--muted)">vs.</div>
+            <div class="field">
+              <label for="compareB">Schedule B</label>
+              <select id="compareB"></select>
+            </div>
+            <button class="btn primary" id="compareBtn">Compare</button>
+          </div>
+          <div class="compare-scroll" id="compareResults">
+            <div class="empty">Choose two schedules to see the coverage difference.</div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <dialog id="employeeDialog">
+    <form id="employeeForm">
+      <div class="modal-head">
+        <h2 id="employeeDialogTitle">Add employee</h2>
+        <button type="button" class="icon-button" id="closeEmployeeDialog" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="field">
+            <label for="employeeName">Employee name</label>
+            <input id="employeeName" required maxlength="80" placeholder="Name" />
+          </div>
+          <div class="field">
+            <label for="employeeShift">Shift group</label>
+            <select id="employeeShift">
+              <option>Days</option>
+              <option>Swings</option>
+              <option>Graves</option>
+              <option>Custom</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="defaultStart">Default time in</label>
+            <input id="defaultStart" type="time" required />
+          </div>
+          <div class="field">
+            <label for="defaultEnd">Default time out</label>
+            <input id="defaultEnd" type="time" required />
+          </div>
+          <div class="span-2">
+            <span class="field-label">Scheduled workdays</span>
+            <div class="days-grid" id="workdayChecks"></div>
+          </div>
+          <div class="span-2">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:end">
+              <div>
+                <span class="field-label">Per day time overrides</span>
+                <p class="helper">Adjust an individual day without changing the employee's other days.</p>
+              </div>
+              <button type="button" class="btn" id="applyDefaultTimes">Apply default times</button>
+            </div>
+            <div class="per-day-editor" id="perDayEditor"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelEmployeeBtn">Cancel</button>
+        <button type="submit" class="btn primary">Save employee</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="saveDialog">
+    <form id="saveVersionForm">
+      <div class="modal-head">
+        <h2>Save schedule version</h2>
+        <button type="button" class="icon-button" id="closeSaveDialog" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label for="versionName">Version name</label>
+          <input id="versionName" required maxlength="80" placeholder="Example: Bid option A" />
+        </div>
+        <p class="helper" style="margin-top:10px">This saves a snapshot of the employee list, workdays, and shift times.</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelSaveBtn">Cancel</button>
+        <button type="submit" class="btn success">Save snapshot</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+    const DAY_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    const WEEK_MINUTES = 7 * 1440;
+    const STORAGE_KEY = "staffingSchedulerDraftV1";
+    const VERSIONS_KEY = "staffingSchedulerVersionsV1";
+
+    const SHIFT_PRESETS = {
+      Days:   { start: "06:00", end: "14:00", color: "#8ee3c4" },
+      Swings: { start: "14:00", end: "22:00", color: "#ffd37d" },
+      Graves: { start: "22:00", end: "06:00", color: "#a9a8ff" },
+      Custom: { start: "09:00", end: "17:00", color: "#ff9ed2" }
+    };
+
+    let state = {
+      employees: [],
+      selectedDay: 0,
+      minimumStaffing: 3
+    };
+
+    let versions = [];
+    let editingEmployeeId = null;
+
+    const el = id => document.getElementById(id);
+    const deepClone = value => JSON.parse(JSON.stringify(value));
+
+    function uid() {
+      return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+    }
+
+    function timeToMinutes(time) {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function formatTime(time) {
+      let [h, m] = time.split(":").map(Number);
+      const suffix = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+      return `${h}:${String(m).padStart(2,"0")} ${suffix}`;
+    }
+
+    function formatHourFromWindowOffset(offsetMinutes) {
+      const total = (360 + offsetMinutes) % 1440;
+      const h24 = Math.floor(total / 60);
+      const suffix = h24 >= 12 ? "PM" : "AM";
+      const h = h24 % 12 || 12;
+      return `${h} ${suffix}`;
+    }
+
+    function employeeColor(shift) {
+      return (SHIFT_PRESETS[shift] || SHIFT_PRESETS.Custom).color;
+    }
+
+    function blankWeek(start = "06:00", end = "14:00", activeDays = [0,1,2,3,4]) {
+      const schedule = {};
+      DAYS.forEach((day, index) => {
+        schedule[day] = {
+          active: activeDays.includes(index),
+          start,
+          end
+        };
+      });
+      return schedule;
+    }
+
+    function normalizeEmployee(employee) {
+      const preset = SHIFT_PRESETS[employee.shift] || SHIFT_PRESETS.Custom;
+      const normalized = {
+        id: employee.id || uid(),
+        name: employee.name || "Unnamed employee",
+        shift: employee.shift || "Custom",
+        schedule: employee.schedule || blankWeek(preset.start, preset.end)
+      };
+      DAYS.forEach(day => {
+        if (!normalized.schedule[day]) {
+          normalized.schedule[day] = { active: false, start: preset.start, end: preset.end };
+        }
+      });
+      return normalized;
+    }
+
+    function safeStorageGet(key, fallback = null) {
+      try {
+        return localStorage.getItem(key) ?? fallback;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function safeStorageSet(key, value) {
+      try {
+        localStorage.setItem(key, value);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function saveDraft() {
+      safeStorageSet(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadStorage() {
+      try {
+        const saved = JSON.parse(safeStorageGet(STORAGE_KEY, "null"));
+        if (saved && Array.isArray(saved.employees)) {
+          state = {
+            employees: saved.employees.map(normalizeEmployee),
+            selectedDay: Number.isInteger(saved.selectedDay) ? saved.selectedDay : 0,
+            minimumStaffing: Number(saved.minimumStaffing ?? 3)
+          };
+        }
+      } catch (error) {
+        console.warn("Could not read draft", error);
+      }
+
+      try {
+        const savedVersions = JSON.parse(safeStorageGet(VERSIONS_KEY, "[]"));
+        versions = Array.isArray(savedVersions) ? savedVersions : [];
+      } catch (error) {
+        versions = [];
+      }
+    }
+
+    function persistVersions() {
+      return safeStorageSet(VERSIONS_KEY, JSON.stringify(versions));
+    }
+
+    function toast(message) {
+      const node = el("toast");
+      node.textContent = message;
+      node.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => node.classList.remove("show"), 2200);
+    }
+
+    function getShiftSegmentsForWindow(dataState, dayIndex) {
+      const windowStart = dayIndex * 1440 + 360;
+      const windowEnd = windowStart + 1440;
+      const segments = [];
+
+      dataState.employees.forEach(employee => {
+        DAYS.forEach((day, scheduleDayIndex) => {
+          const item = employee.schedule[day];
+          if (!item?.active) return;
+
+          let start = scheduleDayIndex * 1440 + timeToMinutes(item.start);
+          let end = scheduleDayIndex * 1440 + timeToMinutes(item.end);
+          if (end <= start) end += 1440;
+
+          [-WEEK_MINUTES, 0, WEEK_MINUTES].forEach(shift => {
+            const shiftedStart = start + shift;
+            const shiftedEnd = end + shift;
+            const overlapStart = Math.max(shiftedStart, windowStart);
+            const overlapEnd = Math.min(shiftedEnd, windowEnd);
+            if (overlapStart < overlapEnd) {
+              segments.push({
+                employeeId: employee.id,
+                name: employee.name,
+                shift: employee.shift,
+                color: employeeColor(employee.shift),
+                originalDayIndex: scheduleDayIndex,
+                startTime: item.start,
+                endTime: item.end,
+                startOffset: overlapStart - windowStart,
+                endOffset: overlapEnd - windowStart,
+                clippedStart: shiftedStart < windowStart,
+                clippedEnd: shiftedEnd > windowEnd,
+                absoluteStart: shiftedStart,
+                absoluteEnd: shiftedEnd
+              });
+            }
+          });
+        });
+      });
+
+      return segments.sort((a,b) =>
+        a.startOffset - b.startOffset ||
+        a.name.localeCompare(b.name)
+      );
+    }
+
+    function staffingRange(dataState, dayIndex, blockStartOffset, blockEndOffset) {
+      const windowStart = dayIndex * 1440 + 360;
+      const blockStart = windowStart + blockStartOffset;
+      const blockEnd = windowStart + blockEndOffset;
+      const allIntervals = [];
+
+      dataState.employees.forEach(employee => {
+        DAYS.forEach((day, scheduleDayIndex) => {
+          const item = employee.schedule[day];
+          if (!item?.active) return;
+          let start = scheduleDayIndex * 1440 + timeToMinutes(item.start);
+          let end = scheduleDayIndex * 1440 + timeToMinutes(item.end);
+          if (end <= start) end += 1440;
+
+          [-WEEK_MINUTES, 0, WEEK_MINUTES].forEach(shift => {
+            const s = start + shift;
+            const e = end + shift;
+            if (s < blockEnd && e > blockStart) {
+              allIntervals.push({ employeeId: employee.id, start: s, end: e });
+            }
+          });
+        });
+      });
+
+      const points = new Set([blockStart, blockEnd]);
+      allIntervals.forEach(interval => {
+        if (interval.start > blockStart && interval.start < blockEnd) points.add(interval.start);
+        if (interval.end > blockStart && interval.end < blockEnd) points.add(interval.end);
+      });
+      const sorted = [...points].sort((a,b) => a-b);
+      const counts = [];
+
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const midpoint = (sorted[i] + sorted[i+1]) / 2;
+        const activeIds = new Set(
+          allIntervals
+            .filter(interval => interval.start <= midpoint && interval.end > midpoint)
+            .map(interval => interval.employeeId)
+        );
+        counts.push(activeIds.size);
+      }
+
+      if (!counts.length) counts.push(0);
+      return { min: Math.min(...counts), max: Math.max(...counts) };
+    }
+
+    function scheduleSummary(dataState) {
+      const summary = {};
+      DAYS.forEach((day, dayIndex) => {
+        summary[day] = [];
+        for (let block = 0; block < 12; block++) {
+          summary[day].push(staffingRange(dataState, dayIndex, block * 120, (block + 1) * 120));
+        }
+      });
+      return summary;
+    }
+
+    function renderAll() {
+      renderRoster();
+      renderDayTabs();
+      renderTimeline();
+      renderVersions();
+      renderCompareOptions();
+      el("minimumStaffing").value = state.minimumStaffing;
+      saveDraft();
+    }
+
+    function renderRoster() {
+      el("employeeCount").textContent = `${state.employees.length} employee${state.employees.length === 1 ? "" : "s"}`;
+      const counts = { Days: 0, Swings: 0, Graves: 0 };
+      state.employees.forEach(emp => {
+        if (counts[emp.shift] !== undefined) counts[emp.shift]++;
+      });
+      el("daysCount").textContent = counts.Days;
+      el("swingsCount").textContent = counts.Swings;
+      el("gravesCount").textContent = counts.Graves;
+
+      const list = el("rosterList");
+      if (!state.employees.length) {
+        list.innerHTML = `<div class="empty">No employees yet. Add an employee or load the example staff.</div>`;
+        return;
+      }
+
+      list.innerHTML = state.employees
+        .slice()
+        .sort((a,b) => a.name.localeCompare(b.name))
+        .map(employee => {
+          const active = DAYS.filter(day => employee.schedule[day]?.active);
+          const sampleDay = active[0];
+          const timeText = sampleDay
+            ? `${formatTime(employee.schedule[sampleDay].start)} to ${formatTime(employee.schedule[sampleDay].end)}`
+            : "No workdays selected";
+          return `
+            <div class="employee-card">
+              <div class="employee-color" style="background:${employeeColor(employee.shift)}"></div>
+              <div>
+                <div class="employee-name">${escapeHtml(employee.name)}</div>
+                <div class="employee-meta">${escapeHtml(employee.shift)} · ${escapeHtml(timeText)}<br>${active.length ? active.map(d => d.slice(0,3)).join(", ") : "Off all week"}</div>
+              </div>
+              <div class="button-row" style="gap:5px">
+                <button class="icon-button" title="Edit" onclick="openEmployeeDialog('${employee.id}')">✎</button>
+                <button class="icon-button" title="Remove" onclick="removeEmployee('${employee.id}')">×</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+    }
+
+    function renderDayTabs() {
+      el("dayTabs").innerHTML = DAYS.map((day, index) => `
+        <button class="day-tab ${index === state.selectedDay ? "active" : ""}" data-day="${index}">${day}</button>
+      `).join("");
+
+      el("dayTabs").querySelectorAll(".day-tab").forEach(button => {
+        button.addEventListener("click", () => {
+          state.selectedDay = Number(button.dataset.day);
+          renderDayTabs();
+          renderTimeline();
+          saveDraft();
+        });
+      });
+    }
+
+    function renderTimeline() {
+      el("timeScale").innerHTML = Array.from({length:12}, (_,i) =>
+        `<div class="time-label">${formatHourFromWindowOffset(i * 120)}</div>`
+      ).join("");
+
+      const segments = getShiftSegmentsForWindow(state, state.selectedDay);
+      el("timelineTitle").textContent = `${DAYS[state.selectedDay]} employees`;
+
+      if (!segments.length) {
+        el("scheduleRows").innerHTML = `
+          <div class="schedule-row">
+            <div class="row-label"><strong>No coverage</strong><span>Add or edit employee workdays</span></div>
+            <div class="bar-lane"></div>
+          </div>
+        `;
+      } else {
+        el("scheduleRows").innerHTML = segments.map(segment => {
+          const left = segment.startOffset / 1440 * 100;
+          const width = (segment.endOffset - segment.startOffset) / 1440 * 100;
+          const carry = segment.originalDayIndex !== state.selectedDay ? ` · from ${DAY_SHORT[segment.originalDayIndex]}` : "";
+          const visibleLabel = width > 10
+            ? `${formatTime(segment.startTime)}–${formatTime(segment.endTime)}`
+            : "";
+          return `
+            <div class="schedule-row">
+              <div class="row-label">
+                <strong>${escapeHtml(segment.name)}</strong>
+                <span>${escapeHtml(segment.shift)}${carry}</span>
+              </div>
+              <div class="bar-lane">
+                <div class="shift-bar"
+                  style="left:${left}%;width:${width}%;background:${segment.color}"
+                  title="${escapeHtml(segment.name)}: ${formatTime(segment.startTime)} to ${formatTime(segment.endTime)}">
+                  ${visibleLabel}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      const threshold = Number(state.minimumStaffing) || 0;
+      el("staffingGrid").innerHTML = Array.from({length:12}, (_,block) => {
+        const range = staffingRange(state, state.selectedDay, block * 120, (block + 1) * 120);
+        const low = range.min < threshold;
+        return `
+          <div class="staff-cell ${low ? "low" : "good"}">
+            <div class="staff-time">${formatHourFromWindowOffset(block * 120)}–${formatHourFromWindowOffset((block+1) * 120)}</div>
+            <div class="staff-count">${range.min}</div>
+            <div class="staff-range">${range.max !== range.min ? `max ${range.max}` : "constant"}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderWorkdayControls(employee) {
+      el("workdayChecks").innerHTML = DAYS.map((day,index) => `
+        <div class="day-check">
+          <input type="checkbox" id="check-${index}" data-day="${day}" ${employee.schedule[day].active ? "checked" : ""}>
+          <label for="check-${index}">${DAY_SHORT[index]}</label>
+        </div>
+      `).join("");
+
+      el("perDayEditor").innerHTML = DAYS.map((day,index) => `
+        <div class="per-day-row ${employee.schedule[day].active ? "" : "disabled"}" data-row-day="${day}">
+          <strong>${DAY_SHORT[index]}</strong>
+          <input type="time" data-start-day="${day}" value="${employee.schedule[day].start}">
+          <input type="time" data-end-day="${day}" value="${employee.schedule[day].end}">
+        </div>
+      `).join("");
+
+      el("workdayChecks").querySelectorAll("input").forEach(check => {
+        check.addEventListener("change", () => {
+          const row = document.querySelector(`[data-row-day="${check.dataset.day}"]`);
+          row.classList.toggle("disabled", !check.checked);
+        });
+      });
+    }
+
+    function openEmployeeDialog(employeeId = null) {
+      editingEmployeeId = employeeId;
+      const existing = state.employees.find(employee => employee.id === employeeId);
+      const shift = existing?.shift || "Days";
+      const preset = SHIFT_PRESETS[shift] || SHIFT_PRESETS.Custom;
+      const employee = existing ? deepClone(existing) : {
+        id: uid(),
+        name: "",
+        shift,
+        schedule: blankWeek(preset.start, preset.end)
+      };
+
+      el("employeeDialogTitle").textContent = existing ? "Edit employee" : "Add employee";
+      el("employeeName").value = employee.name;
+      el("employeeShift").value = employee.shift;
+
+      const firstActiveDay = DAYS.find(day => employee.schedule[day].active) || DAYS[0];
+      el("defaultStart").value = employee.schedule[firstActiveDay].start || preset.start;
+      el("defaultEnd").value = employee.schedule[firstActiveDay].end || preset.end;
+      renderWorkdayControls(employee);
+      el("employeeDialog").showModal();
+      setTimeout(() => el("employeeName").focus(), 50);
+    }
+
+    window.openEmployeeDialog = openEmployeeDialog;
+
+    function removeEmployee(employeeId) {
+      const employee = state.employees.find(item => item.id === employeeId);
+      if (!employee) return;
+      if (!confirm(`Remove ${employee.name} from the draft schedule?`)) return;
+      state.employees = state.employees.filter(item => item.id !== employeeId);
+      renderAll();
+      toast("Employee removed");
+    }
+
+    window.removeEmployee = removeEmployee;
+
+    function renderVersions() {
+      const list = el("versionList");
+      if (!versions.length) {
+        list.innerHTML = `<div class="empty">No saved versions yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = versions
+        .slice()
+        .sort((a,b) => new Date(b.savedAt) - new Date(a.savedAt))
+        .map(version => `
+          <div class="version-card">
+            <div>
+              <strong>${escapeHtml(version.name)}</strong>
+              <span>${version.state.employees.length} employees · ${new Date(version.savedAt).toLocaleString()}</span>
+            </div>
+            <div class="button-row" style="gap:5px">
+              <button class="icon-button" title="Load" onclick="loadVersion('${version.id}')">↶</button>
+              <button class="icon-button" title="Duplicate into draft" onclick="duplicateVersion('${version.id}')">⧉</button>
+              <button class="icon-button" title="Delete" onclick="deleteVersion('${version.id}')">×</button>
+            </div>
+          </div>
+        `).join("");
+    }
+
+    function loadVersion(versionId) {
+      const version = versions.find(v => v.id === versionId);
+      if (!version) return;
+      if (!confirm(`Replace the current draft with "${version.name}"?`)) return;
+      state = deepClone(version.state);
+      state.employees = state.employees.map(normalizeEmployee);
+      renderAll();
+      toast("Saved version loaded");
+    }
+    window.loadVersion = loadVersion;
+
+    function duplicateVersion(versionId) {
+      const version = versions.find(v => v.id === versionId);
+      if (!version) return;
+      state = deepClone(version.state);
+      state.employees = state.employees.map(employee => ({...normalizeEmployee(employee), id: uid()}));
+      renderAll();
+      toast("Version copied into the draft");
+    }
+    window.duplicateVersion = duplicateVersion;
+
+    function deleteVersion(versionId) {
+      const version = versions.find(v => v.id === versionId);
+      if (!version || !confirm(`Delete saved version "${version.name}"?`)) return;
+      versions = versions.filter(v => v.id !== versionId);
+      persistVersions();
+      renderVersions();
+      renderCompareOptions();
+      toast("Saved version deleted");
+    }
+    window.deleteVersion = deleteVersion;
+
+    function renderCompareOptions() {
+      const options = [
+        { id: "current", name: "Current draft" },
+        ...versions.map(v => ({ id: v.id, name: v.name }))
+      ];
+      const currentA = el("compareA").value || "current";
+      const currentB = el("compareB").value || (versions[0]?.id || "current");
+      const html = options.map(o => `<option value="${o.id}">${escapeHtml(o.name)}</option>`).join("");
+      el("compareA").innerHTML = html;
+      el("compareB").innerHTML = html;
+      if (options.some(o => o.id === currentA)) el("compareA").value = currentA;
+      if (options.some(o => o.id === currentB)) el("compareB").value = currentB;
+    }
+
+    function getCompareState(id) {
+      if (id === "current") return state;
+      return versions.find(v => v.id === id)?.state || state;
+    }
+
+    function compareSchedules() {
+      const aId = el("compareA").value;
+      const bId = el("compareB").value;
+      const a = getCompareState(aId);
+      const b = getCompareState(bId);
+      const aSummary = scheduleSummary(a);
+      const bSummary = scheduleSummary(b);
+
+      const headers = Array.from({length:12}, (_,i) =>
+        `<th>${formatHourFromWindowOffset(i*120)}</th>`
+      ).join("");
+
+      const rows = DAYS.map(day => {
+        const cells = aSummary[day].map((range, index) => {
+          const delta = bSummary[day][index].min - range.min;
+          const className = delta > 0 ? "delta-positive" : delta < 0 ? "delta-negative" : "delta-zero";
+          const sign = delta > 0 ? "+" : "";
+          return `<td title="A: ${range.min}, B: ${bSummary[day][index].min}" class="${className}">${sign}${delta}</td>`;
+        }).join("");
+        return `<tr><td><strong>${day}</strong></td>${cells}</tr>`;
+      }).join("");
+
+      el("compareResults").innerHTML = `
+        <p class="helper" style="margin-bottom:10px">Each cell shows Schedule B minus Schedule A. Positive numbers mean B has more minimum coverage.</p>
+        <table>
+          <thead><tr><th>Day</th>${headers}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function saveVersion(name) {
+      versions.push({
+        id: uid(),
+        name,
+        savedAt: new Date().toISOString(),
+        state: deepClone(state)
+      });
+      persistVersions();
+      renderVersions();
+      renderCompareOptions();
+      toast("Schedule version saved");
+    }
+
+    function loadDemo() {
+      if (state.employees.length && !confirm("Replace the current employee draft with example staff?")) return;
+      const demo = [
+        { name:"Jordan", shift:"Days", start:"06:00", end:"14:00", days:[0,1,2,3,4] },
+        { name:"Casey", shift:"Days", start:"08:00", end:"18:00", days:[0,1,2,3] },
+        { name:"Morgan", shift:"Swings", start:"14:00", end:"22:00", days:[0,1,2,3,4] },
+        { name:"Taylor", shift:"Swings", start:"12:00", end:"22:00", days:[2,3,4,5] },
+        { name:"Riley", shift:"Graves", start:"20:00", end:"06:00", days:[0,1,2,3] },
+        { name:"Avery", shift:"Graves", start:"22:00", end:"08:00", days:[3,4,5,6] }
+      ];
+      state.employees = demo.map(item => ({
+        id: uid(),
+        name: item.name,
+        shift: item.shift,
+        schedule: blankWeek(item.start, item.end, item.days)
+      }));
+      renderAll();
+      toast("Example staff loaded");
+    }
+
+    function exportData() {
+      const payload = {
+        app: "24/7 Staffing Scheduler",
+        exportedAt: new Date().toISOString(),
+        draft: state,
+        versions
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `staffing-scheduler-${new Date().toISOString().slice(0,10)}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const payload = JSON.parse(reader.result);
+          if (!payload.draft || !Array.isArray(payload.draft.employees)) throw new Error("Invalid scheduler file");
+          state = payload.draft;
+          state.employees = state.employees.map(normalizeEmployee);
+          versions = Array.isArray(payload.versions) ? payload.versions : [];
+          persistVersions();
+          renderAll();
+          toast("Schedule data imported");
+        } catch (error) {
+          alert("That file could not be imported. Please select a JSON export created by this scheduler.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    el("addEmployeeBtn").addEventListener("click", () => openEmployeeDialog());
+    el("closeEmployeeDialog").addEventListener("click", () => el("employeeDialog").close());
+    el("cancelEmployeeBtn").addEventListener("click", () => el("employeeDialog").close());
+
+    el("employeeShift").addEventListener("change", event => {
+      const preset = SHIFT_PRESETS[event.target.value] || SHIFT_PRESETS.Custom;
+      el("defaultStart").value = preset.start;
+      el("defaultEnd").value = preset.end;
+    });
+
+    el("applyDefaultTimes").addEventListener("click", () => {
+      const start = el("defaultStart").value;
+      const end = el("defaultEnd").value;
+      DAYS.forEach(day => {
+        document.querySelector(`[data-start-day="${day}"]`).value = start;
+        document.querySelector(`[data-end-day="${day}"]`).value = end;
+      });
+    });
+
+    el("employeeForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const name = el("employeeName").value.trim();
+      if (!name) return;
+
+      const schedule = {};
+      DAYS.forEach((day,index) => {
+        schedule[day] = {
+          active: el(`check-${index}`).checked,
+          start: document.querySelector(`[data-start-day="${day}"]`).value,
+          end: document.querySelector(`[data-end-day="${day}"]`).value
+        };
+      });
+
+      const employee = normalizeEmployee({
+        id: editingEmployeeId || uid(),
+        name,
+        shift: el("employeeShift").value,
+        schedule
+      });
+
+      const existingIndex = state.employees.findIndex(item => item.id === editingEmployeeId);
+      if (existingIndex >= 0) state.employees[existingIndex] = employee;
+      else state.employees.push(employee);
+
+      el("employeeDialog").close();
+      renderAll();
+      toast(existingIndex >= 0 ? "Employee updated" : "Employee added");
+    });
+
+    el("minimumStaffing").addEventListener("input", event => {
+      state.minimumStaffing = Number(event.target.value) || 0;
+      renderTimeline();
+      saveDraft();
+    });
+
+    el("saveVersionBtn").addEventListener("click", () => {
+      el("versionName").value = `Bid option ${versions.length + 1}`;
+      el("saveDialog").showModal();
+      setTimeout(() => el("versionName").select(), 50);
+    });
+    el("closeSaveDialog").addEventListener("click", () => el("saveDialog").close());
+    el("cancelSaveBtn").addEventListener("click", () => el("saveDialog").close());
+    el("saveVersionForm").addEventListener("submit", event => {
+      event.preventDefault();
+      saveVersion(el("versionName").value.trim());
+      el("saveDialog").close();
+    });
+
+    el("compareBtn").addEventListener("click", compareSchedules);
+    el("loadDemoBtn").addEventListener("click", loadDemo);
+    el("exportBtn").addEventListener("click", exportData);
+    el("importBtn").addEventListener("click", () => el("importFile").click());
+    el("importFile").addEventListener("change", event => {
+      const file = event.target.files[0];
+      if (file) importData(file);
+      event.target.value = "";
+    });
+
+    el("clearBtn").addEventListener("click", () => {
+      if (!confirm("Clear the current draft? Saved versions will remain available.")) return;
+      state = { employees: [], selectedDay: 0, minimumStaffing: 3 };
+      renderAll();
+      toast("Draft cleared");
+    });
+
+    loadStorage();
+    renderAll();
+  </script>
+</body>
+</html>
