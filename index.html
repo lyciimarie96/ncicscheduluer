@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SHIFT//SYNTH Scheduler V4</title>
+  <title>SHIFT//SYNTH Scheduler V5</title>
   <style>
     :root {
       --bg: #0b1020;
@@ -1407,20 +1407,103 @@
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
 
 
+    .generator-dialog { width: min(1080px, calc(100% - 26px)); }
+    .generator-intro {
+      border: 1px solid #514266;
+      border-radius: 12px;
+      padding: 14px;
+      background: #211a31;
+      margin-bottom: 14px;
+    }
+    .generator-intro strong { color: #8fe7ef; }
+    .generator-prompt-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: end; }
+    .generator-prompt-row textarea {
+      min-height: 94px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+    .generator-settings {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px,1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .generator-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(120px,1fr));
+      gap: 9px;
+      margin: 12px 0;
+    }
+    .generator-stat {
+      background: #191425;
+      border: 1px solid #453854;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .generator-stat span { display:block; color:#bfb6ca; font-size:.75rem; }
+    .generator-stat strong { display:block; margin-top:3px; font-size:1.08rem; }
+    .generator-groups-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .generator-groups { display: grid; gap: 9px; margin-top: 9px; }
+    .generator-group {
+      display: grid;
+      grid-template-columns: 80px 90px 100px 120px 105px 130px 40px;
+      gap: 8px;
+      align-items: end;
+      border: 1px solid #493b59;
+      background: #181322;
+      border-radius: 11px;
+      padding: 11px;
+    }
+    .generator-group .field label { font-size: .72rem; }
+    .generator-group-remove { height: 42px; }
+    .generator-result {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border: 1px solid #3f7b79;
+      background: #172a2c;
+      border-radius: 10px;
+      color: #d9fbf7;
+    }
+    .generator-result[hidden] { display: none; }
+    .generator-checks { display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; }
+    .generator-hint {
+      color: #c8bfd2;
+      font-size: .82rem;
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+    @media (max-width: 980px) {
+      .generator-settings { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .generator-group { grid-template-columns: repeat(3, minmax(0,1fr)); }
+      .generator-group-remove { width:100%; }
+    }
+    @media (max-width: 620px) {
+      .generator-prompt-row { grid-template-columns: 1fr; }
+      .generator-settings, .generator-summary, .generator-group { grid-template-columns: 1fr; }
+    }
+
+
   </style>
 </head>
 <body>
   <div class="app-shell">
-    <header class="hero"><div class="build-badge">V4 // WEEKVIEW BUILD</div>
+    <header class="hero"><div class="build-badge">V5 // SMART GENERATOR</div>
       <div class="brand-lockup">
         <div class="brand-mark" aria-hidden="true"></div>
         <div>
-          <div class="eyebrow"><span class="status-dot"></span>SHIFT//SYNTH SCHEDULE CONSOLE · WEEKVIEW BUILD · SYSTEM ONLINE</div>
+          <div class="eyebrow"><span class="status-dot"></span>SHIFT//SYNTH SCHEDULE CONSOLE · SMART GENERATOR · SYSTEM ONLINE</div>
           <h1><span class="neon">24/7</span> Staffing <span class="slash">//</span> Scheduler</h1>
-          <p class="subtitle">Build shift bid options, see the complete week at once, and export polished schedule snapshots.</p>
+          <p class="subtitle">Build shift bid options, generate drafts from staffing rules, review the full week, and export schedule snapshots.</p>
         </div>
       </div>
       <div class="header-actions">
+        <button class="btn success" id="smartGenerateBtn">✦ Smart generate</button>
         <button class="btn primary" id="importBtn">⇩ Import schedule</button>
         <button class="btn ghost" id="exportBtn">⇧ Export snapshot</button>
         <button class="btn danger" id="clearBtn">Clear draft</button>
@@ -1445,6 +1528,7 @@
           </div>
           <div class="roster-list" id="rosterList"></div>
           <div class="button-row" style="margin-top:12px">
+            <button class="btn success" id="smartGenerateSidebarBtn">✦ Generate from rules</button>
             <button class="btn" id="loadDemoBtn">Load sample numbers</button>
           </div>
         </div>
@@ -1633,6 +1717,112 @@
   </dialog>
 
 
+  <dialog id="generatorDialog" class="generator-dialog">
+    <div class="modal-head">
+      <div>
+        <h2>Smart schedule generator</h2>
+        <div class="muted">Turn staffing rules into a balanced weekly draft.</div>
+      </div>
+      <button type="button" class="icon-button" id="closeGeneratorDialog" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="generator-intro">
+        <strong>Describe the schedule in plain language or build it with the controls below.</strong>
+        <p class="generator-hint">The generator runs locally in your browser. It uses a constraint based optimizer to distribute workdays, days off, long shifts, and short shifts while aiming for your staffing priorities.</p>
+      </div>
+
+      <div class="generator-prompt-row">
+        <div class="field">
+          <label for="generatorPrompt">Describe the draft you need</label>
+          <textarea id="generatorPrompt" placeholder="Example: 9 people work 12s starting at 6 AM and 6 PM. 9 people work 8s starting at 6 AM, 2 PM, and 10 PM. Keep at least 3 people working. Prioritize noon to 6 PM Monday through Friday."></textarea>
+        </div>
+        <div class="button-row" style="flex-direction:column;align-items:stretch">
+          <button type="button" class="btn primary" id="interpretGeneratorBtn">Interpret description</button>
+          <button type="button" class="btn" id="generatorExampleBtn">Use 9 plus 9 example</button>
+        </div>
+      </div>
+
+      <div class="generator-settings">
+        <div class="field">
+          <label for="generatorNumberPrefix">Number prefix</label>
+          <input id="generatorNumberPrefix" maxlength="12" placeholder="Optional" />
+        </div>
+        <div class="field">
+          <label for="generatorStartNumber">First employee number</label>
+          <input id="generatorStartNumber" type="number" min="0" step="1" value="101" />
+        </div>
+        <div class="field">
+          <label for="generatorMinimumStaffing">Minimum staffing goal</label>
+          <input id="generatorMinimumStaffing" type="number" min="0" max="99" step="1" value="3" />
+        </div>
+        <div class="field">
+          <label for="generatorPriority">Coverage priority</label>
+          <select id="generatorPriority">
+            <option value="balanced">Even coverage all week</option>
+            <option value="weekday">More weekday coverage</option>
+            <option value="midday">Most coverage noon to 6 PM</option>
+            <option value="weekendLean">Lean weekends, strong weekdays</option>
+            <option value="minimum">Meet the minimum first</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="generatorPatternStyle">Workday pattern</label>
+          <select id="generatorPatternStyle">
+            <option value="balanced">Balanced rotations</option>
+            <option value="consecutive">Prefer consecutive workdays</option>
+            <option value="spread">Spread long shifts apart</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="generator-summary" aria-live="polite">
+        <div class="generator-stat"><span>Employees to generate</span><strong id="generatorEmployeeTotal">0</strong></div>
+        <div class="generator-stat"><span>Weekly staff hours</span><strong id="generatorHoursTotal">0</strong></div>
+        <div class="generator-stat"><span>Shift groups</span><strong id="generatorGroupTotal">0</strong></div>
+      </div>
+
+      <div class="generator-groups-head">
+        <div>
+          <h3 style="margin-bottom:3px">Shift pattern groups</h3>
+          <p class="helper">Create a separate row for every start time. Employee counts can be split across several rows.</p>
+        </div>
+        <button type="button" class="btn" id="addGeneratorGroupBtn">＋ Add pattern group</button>
+      </div>
+      <div class="generator-groups" id="generatorGroups"></div>
+
+      <div class="generator-settings" style="grid-template-columns:repeat(2,minmax(180px,1fr));margin-bottom:0">
+        <div class="field">
+          <label for="generatorMode">Place generated employees into</label>
+          <select id="generatorMode">
+            <option value="replace">Replace the current draft</option>
+            <option value="merge">Add them to the current draft</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="generatorAttempts">Optimization strength</label>
+          <select id="generatorAttempts">
+            <option value="4">Fast</option>
+            <option value="10" selected>Balanced</option>
+            <option value="20">Thorough</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="generator-checks">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="saveBeforeGenerate" checked />
+          <label class="form-check-label" for="saveBeforeGenerate">Save the current draft before generating</label>
+        </div>
+      </div>
+      <div class="generator-result" id="generatorResult" hidden></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="cancelGeneratorBtn">Cancel</button>
+      <button type="button" class="btn success" id="runGeneratorBtn">✦ Generate draft</button>
+    </div>
+  </dialog>
+
+
   <dialog id="importDialog" class="import-dialog">
     <form id="spreadsheetImportForm">
       <div class="modal-head">
@@ -1751,8 +1941,8 @@
     const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
     const DAY_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
     const WEEK_MINUTES = 7 * 1440;
-    const STORAGE_KEY = "staffingSchedulerDraftV1";
-    const VERSIONS_KEY = "staffingSchedulerVersionsV1";
+    const STORAGE_KEY = "staffingSchedulerDraftV5";
+    const VERSIONS_KEY = "staffingSchedulerVersionsV5";
 
     const SHIFT_PRESETS = {
       Days:   { start: "06:00", end: "14:00", color: "linear-gradient(90deg,#35e7ff,#65ffd2)" },
@@ -1764,7 +1954,8 @@
     let state = {
       employees: [],
       selectedDay: 0,
-      minimumStaffing: 3
+      minimumStaffing: 3,
+      generationInfo: null
     };
 
     let versions = [];
@@ -1773,6 +1964,7 @@
     let sheetJsPromise = null;
     let pdfLibPromise = null;
     let scheduleViewMode = "daily";
+    let generatorGroupCounter = 0;
 
     const el = id => document.getElementById(id);
     const deepClone = value => JSON.parse(JSON.stringify(value));
@@ -1877,7 +2069,8 @@
           state = {
             employees: saved.employees.map(normalizeEmployee),
             selectedDay: Number.isInteger(saved.selectedDay) ? saved.selectedDay : 0,
-            minimumStaffing: Number(saved.minimumStaffing ?? 3)
+            minimumStaffing: Number(saved.minimumStaffing ?? 3),
+            generationInfo: saved.generationInfo || null
           };
         }
       } catch (error) {
@@ -2397,6 +2590,450 @@
     }
 
 
+    function minutesToTime(totalMinutes) {
+      const normalized = ((Math.round(totalMinutes) % 1440) + 1440) % 1440;
+      return `${String(Math.floor(normalized / 60)).padStart(2,"0")}:${String(normalized % 60).padStart(2,"0")}`;
+    }
+
+    function classifyGeneratedShift(startTime, requested = "Auto", hours = 8) {
+      if (requested && requested !== "Auto") return requested;
+      const hour = Math.floor(timeToMinutes(startTime) / 60);
+      if (hour >= 5 && hour < 12) return "Days";
+      if (hour >= 18 || hour < 5) return "Graves";
+      return "Swings";
+    }
+
+    function defaultDaysForHours(hours) {
+      if (hours >= 11.5) return 3;
+      if (hours >= 9.5) return 4;
+      return 5;
+    }
+
+    function addGeneratorGroup(data = {}) {
+      const groupId = `generator-group-${++generatorGroupCounter}`;
+      const row = document.createElement("div");
+      row.className = "generator-group";
+      row.dataset.groupId = groupId;
+      row.innerHTML = `
+        <div class="field"><label>Employees</label><input type="number" min="1" max="99" step="1" data-generator-field="count" value="${Number(data.count ?? 3)}"></div>
+        <div class="field"><label>Main hours</label><input type="number" min="1" max="24" step="0.5" data-generator-field="hours" value="${Number(data.hours ?? 8)}"></div>
+        <div class="field"><label>Main days/week</label><input type="number" min="1" max="7" step="1" data-generator-field="days" value="${Number(data.days ?? defaultDaysForHours(Number(data.hours ?? 8)))}"></div>
+        <div class="field"><label>Start time</label><input type="time" data-generator-field="start" value="${escapeHtml(data.start || "06:00")}"></div>
+        <div class="field"><label>Extra short hours</label><input type="number" min="0" max="12" step="0.5" data-generator-field="extraHours" value="${Number(data.extraHours ?? 0)}"></div>
+        <div class="field"><label>Shift label</label><select data-generator-field="shift"><option>Auto</option><option>Days</option><option>Swings</option><option>Graves</option><option>Custom</option></select></div>
+        <button type="button" class="icon-button generator-group-remove" aria-label="Remove pattern group">×</button>
+      `;
+      row.querySelector('[data-generator-field="shift"]').value = data.shift || "Auto";
+      row.querySelectorAll("input,select").forEach(control => control.addEventListener("input", updateGeneratorSummary));
+      row.querySelector(".generator-group-remove").addEventListener("click", () => {
+        row.remove();
+        updateGeneratorSummary();
+      });
+      el("generatorGroups").appendChild(row);
+      updateGeneratorSummary();
+    }
+
+    function getGeneratorGroups() {
+      return [...el("generatorGroups").querySelectorAll(".generator-group")].map((row, index) => {
+        const value = field => row.querySelector(`[data-generator-field="${field}"]`).value;
+        return {
+          sourceIndex: index,
+          count: Math.max(1, Math.floor(Number(value("count")) || 1)),
+          hours: Math.max(.5, Math.min(24, Number(value("hours")) || 8)),
+          days: Math.max(1, Math.min(7, Math.floor(Number(value("days")) || 5))),
+          start: value("start") || "06:00",
+          extraHours: Math.max(0, Math.min(12, Number(value("extraHours")) || 0)),
+          shift: value("shift") || "Auto"
+        };
+      });
+    }
+
+    function updateGeneratorSummary() {
+      const groups = getGeneratorGroups();
+      const employees = groups.reduce((sum, group) => sum + group.count, 0);
+      const hours = groups.reduce((sum, group) => sum + group.count * (group.hours * group.days + group.extraHours), 0);
+      el("generatorEmployeeTotal").textContent = employees;
+      el("generatorHoursTotal").textContent = hours.toLocaleString(undefined, { maximumFractionDigits: 1 });
+      el("generatorGroupTotal").textContent = groups.length;
+    }
+
+    function parseClockTokens(text) {
+      const results = [];
+      const add = value => { if (value && !results.includes(value)) results.push(value); };
+      const regex = /\b(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)\b|\b([01]?\d|2[0-3]):([0-5]\d)\b|\b([01]\d|2[0-3])([0-5]\d)\b/gi;
+      let match;
+      while ((match = regex.exec(text))) {
+        if (match[1]) {
+          let hour = Number(match[1]);
+          const minute = Number(match[2] || 0);
+          const pm = match[3].toLowerCase().startsWith("p");
+          if (hour === 12) hour = 0;
+          if (pm) hour += 12;
+          if (hour < 24 && minute < 60) add(minutesToTime(hour * 60 + minute));
+        } else if (match[4] !== undefined) {
+          add(`${String(Number(match[4])).padStart(2,"0")}:${match[5]}`);
+        } else if (match[6] !== undefined) {
+          add(`${match[6]}:${match[7]}`);
+        }
+      }
+      return results;
+    }
+
+    function defaultStartsForHours(hours) {
+      if (hours >= 11.5) return ["06:00", "18:00"];
+      if (hours >= 9.5) return ["06:00", "16:00"];
+      return ["06:00", "14:00", "22:00"];
+    }
+
+    function splitCountAcrossStarts(count, starts) {
+      const base = Math.floor(count / starts.length);
+      let remainder = count % starts.length;
+      return starts.map(start => ({ start, count: base + (remainder-- > 0 ? 1 : 0) })).filter(item => item.count > 0);
+    }
+
+    function interpretGeneratorDescription() {
+      const text = el("generatorPrompt").value.trim();
+      if (!text) {
+        alert("Describe the staffing plan first, or use the example button.");
+        return;
+      }
+      const matches = [];
+      const pattern = /(\d+)\s*(?:people|employees|staff|positions)?\s*(?:will\s+|should\s+)?(?:work(?:ing)?\s*)?(\d+(?:\.\d+)?)\s*(?:hour(?:s)?|hr(?:s)?|h|s)\b/gi;
+      let match;
+      while ((match = pattern.exec(text))) matches.push({ index: match.index, end: pattern.lastIndex, count: Number(match[1]), hours: Number(match[2]) });
+      if (!matches.length) {
+        alert("I could not find an employee count and shift length. Try wording such as: 9 people work 12s and 9 people work 8s.");
+        return;
+      }
+
+      el("generatorGroups").innerHTML = "";
+      matches.forEach((item, index) => {
+        const segment = text.slice(item.end, matches[index + 1]?.index ?? text.length);
+        const startClause = segment.match(/(?:starting|starts?|at)\s+([^.;\n]+)/i);
+        const startSource = startClause ? startClause[1] : segment.split(/[.;\n]/)[0];
+        const parsedStarts = parseClockTokens(startSource);
+        const starts = parsedStarts.length ? parsedStarts : defaultStartsForHours(item.hours);
+        const daysMatch = segment.match(/(?:for|on)?\s*(\d)\s*days?(?:\s*per\s*week)?/i);
+        const extraMatch = segment.match(/(?:extra|plus|and one)\s*(\d+(?:\.\d+)?)\s*(?:hour|hr|h)/i);
+        const days = daysMatch ? Number(daysMatch[1]) : defaultDaysForHours(item.hours);
+        const extraHours = extraMatch ? Number(extraMatch[1]) : 0;
+        splitCountAcrossStarts(item.count, starts).forEach(split => addGeneratorGroup({
+          count: split.count,
+          hours: item.hours,
+          days,
+          start: split.start,
+          extraHours,
+          shift: "Auto"
+        }));
+      });
+
+      const minMatch = text.match(/(?:at least|minimum|min(?:imum)? staffing(?: of)?|keep)\s*(\d+)\s*(?:people|employees|staff)?/i);
+      if (minMatch) el("generatorMinimumStaffing").value = Number(minMatch[1]);
+      const numberMatch = text.match(/(?:employee numbers?\s*(?:start|starting)\s*(?:at|with)?|start(?:ing)?\s*employee numbers?\s*(?:at|with)?)\s*([a-z-]*)(\d+)/i);
+      if (numberMatch) {
+        el("generatorNumberPrefix").value = numberMatch[1] || "";
+        el("generatorStartNumber").value = Number(numberMatch[2]);
+      }
+      const lowered = text.toLowerCase();
+      if (/noon|12\s*p\.?m|midday|12pm|6\s*p\.?m/.test(lowered)) el("generatorPriority").value = "midday";
+      else if (/weekday|monday through friday|mon(?:day)?\s*(?:to|through|-)\s*fri/.test(lowered)) el("generatorPriority").value = "weekday";
+      if (/weekend.*(?:lean|minimum|less|lower)/.test(lowered)) el("generatorPriority").value = "weekendLean";
+      updateGeneratorSummary();
+      el("generatorResult").hidden = false;
+      el("generatorResult").textContent = `Interpreted ${matches.length} staffing rule${matches.length === 1 ? "" : "s"} into ${getGeneratorGroups().length} start-time group${getGeneratorGroups().length === 1 ? "" : "s"}. Review the rows before generating.`;
+    }
+
+    function loadGeneratorExample() {
+      el("generatorPrompt").value = "9 people work 12s starting at 6 AM and 6 PM. 9 people work 8s starting at 6 AM, 2 PM, and 10 PM. Keep at least 3 people working. Prioritize noon to 6 PM Monday through Friday.";
+      interpretGeneratorDescription();
+    }
+
+    function combinationsOfDays(count) {
+      const output = [];
+      const walk = (start, selected) => {
+        if (selected.length === count) {
+          output.push(selected.slice());
+          return;
+        }
+        for (let index = start; index < 7; index++) walk(index + 1, [...selected, index]);
+      };
+      walk(0, []);
+      return output;
+    }
+
+    function transitionCount(durations) {
+      let transitions = 0;
+      for (let day = 0; day < 7; day++) {
+        const active = durations[day] > 0;
+        const next = durations[(day + 1) % 7] > 0;
+        if (active !== next) transitions++;
+      }
+      return transitions;
+    }
+
+    function patternPreferencePenalty(durations, group, style) {
+      const transitions = transitionCount(durations);
+      if (style === "consecutive") return transitions * .22;
+      if (style === "spread" && group.hours >= 11.5) {
+        let adjacent = 0;
+        for (let day = 0; day < 7; day++) if (durations[day] >= group.hours && durations[(day + 1) % 7] >= group.hours) adjacent++;
+        return adjacent * .55;
+      }
+      return transitions * .05;
+    }
+
+    function buildGroupCandidates(group, style) {
+      const mainSets = combinationsOfDays(group.days);
+      const candidates = [];
+      mainSets.forEach(mainDays => {
+        const remaining = [0,1,2,3,4,5,6].filter(day => !mainDays.includes(day));
+        const extraChoices = group.extraHours > 0 && remaining.length ? remaining : [null];
+        extraChoices.forEach(extraDay => {
+          const durations = Array(7).fill(0);
+          mainDays.forEach(day => durations[day] = group.hours);
+          if (extraDay !== null) durations[extraDay] = group.extraHours;
+          candidates.push({
+            durations,
+            key: durations.join("/"),
+            preferencePenalty: patternPreferencePenalty(durations, group, style)
+          });
+        });
+      });
+      return candidates;
+    }
+
+    function candidateContribution(group, candidate) {
+      const coverage = Array(84).fill(0);
+      const startMinutes = timeToMinutes(group.start);
+      candidate.durations.forEach((duration, scheduleDay) => {
+        if (!duration) return;
+        const shiftStart = scheduleDay * 1440 + startMinutes;
+        const shiftEnd = shiftStart + duration * 60;
+        for (let viewDay = 0; viewDay < 7; viewDay++) {
+          for (let block = 0; block < 12; block++) {
+            const midpoint = viewDay * 1440 + 360 + block * 120 + 60;
+            const covered = [-WEEK_MINUTES, 0, WEEK_MINUTES].some(offset => midpoint >= shiftStart + offset && midpoint < shiftEnd + offset);
+            if (covered) coverage[viewDay * 12 + block] = 1;
+          }
+        }
+      });
+      return coverage;
+    }
+
+    function priorityMultiplier(profile, dayIndex, blockIndex) {
+      const midpointMinutes = (360 + blockIndex * 120 + 60) % 1440;
+      const weekday = dayIndex < 5;
+      const noonToSix = midpointMinutes >= 720 && midpointMinutes < 1080;
+      const daytime = midpointMinutes >= 600 && midpointMinutes < 1320;
+      if (profile === "weekday") return weekday ? (daytime ? 1.55 : 1.15) : .65;
+      if (profile === "midday") return weekday ? (noonToSix ? 2.35 : daytime ? 1.35 : .9) : .55;
+      if (profile === "weekendLean") return weekday ? (noonToSix ? 1.8 : 1.35) : .48;
+      if (profile === "minimum") return 1;
+      return 1;
+    }
+
+    function buildGeneratorTarget(groups, preparedGroups, profile, minimumStaffing) {
+      const base = Array(84).fill(0);
+      groups.forEach((group, groupIndex) => {
+        const candidates = preparedGroups[groupIndex].candidates;
+        const average = Array(84).fill(0);
+        candidates.forEach(candidate => candidate.coverage.forEach((value, slot) => average[slot] += value / candidates.length));
+        average.forEach((value, slot) => base[slot] += value * group.count);
+      });
+      const target = base.slice();
+      const weights = Array(84).fill(1);
+      for (let block = 0; block < 12; block++) {
+        const multipliers = Array.from({length:7}, (_, day) => priorityMultiplier(profile, day, block));
+        const averageMultiplier = multipliers.reduce((sum, value) => sum + value, 0) / 7 || 1;
+        for (let day = 0; day < 7; day++) {
+          const slot = day * 12 + block;
+          target[slot] = Math.max(minimumStaffing, base[slot] * multipliers[day] / averageMultiplier);
+          weights[slot] = multipliers[day];
+        }
+      }
+      return { target, weights };
+    }
+
+    function scheduleScore(coverage, target, weights, minimumStaffing) {
+      let score = 0;
+      for (let slot = 0; slot < 84; slot++) {
+        const difference = coverage[slot] - target[slot];
+        score += weights[slot] * difference * difference;
+        if (coverage[slot] < minimumStaffing) {
+          const shortage = minimumStaffing - coverage[slot];
+          score += 24 * shortage * shortage;
+        }
+      }
+      return score;
+    }
+
+    function shuffled(values) {
+      const array = values.slice();
+      for (let index = array.length - 1; index > 0; index--) {
+        const swap = Math.floor(Math.random() * (index + 1));
+        [array[index], array[swap]] = [array[swap], array[index]];
+      }
+      return array;
+    }
+
+    function optimizeGeneratedAssignments(groups, existingEmployees, profile, patternStyle, minimumStaffing, attempts) {
+      const prepared = groups.map(group => {
+        const candidates = buildGroupCandidates(group, patternStyle).map(candidate => ({
+          ...candidate,
+          coverage: candidateContribution(group, candidate)
+        }));
+        return { group, candidates };
+      });
+      const { target, weights } = buildGeneratorTarget(groups, prepared, profile, minimumStaffing);
+      const existingState = { employees: existingEmployees.map(normalizeEmployee) };
+      const existingCoverage = Array(84).fill(0);
+      for (let day = 0; day < 7; day++) {
+        for (let block = 0; block < 12; block++) existingCoverage[day * 12 + block] = staffingRange(existingState, day, block * 120, (block + 1) * 120).min;
+      }
+      const jobs = [];
+      groups.forEach((group, groupIndex) => {
+        for (let employeeIndex = 0; employeeIndex < group.count; employeeIndex++) jobs.push({ groupIndex, employeeIndex });
+      });
+
+      let best = null;
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        const coverage = existingCoverage.slice();
+        const assignments = [];
+        const usage = prepared.map(item => new Map());
+        shuffled(jobs).forEach(job => {
+          const candidates = prepared[job.groupIndex].candidates;
+          let bestCandidate = null;
+          let bestCandidateScore = Infinity;
+          candidates.forEach(candidate => {
+            const nextCoverage = coverage.map((value, slot) => value + candidate.coverage[slot]);
+            const repeated = usage[job.groupIndex].get(candidate.key) || 0;
+            const candidateScore = scheduleScore(nextCoverage, target, weights, minimumStaffing) + candidate.preferencePenalty + repeated * .75;
+            if (candidateScore < bestCandidateScore) {
+              bestCandidateScore = candidateScore;
+              bestCandidate = candidate;
+            }
+          });
+          bestCandidate.coverage.forEach((value, slot) => coverage[slot] += value);
+          usage[job.groupIndex].set(bestCandidate.key, (usage[job.groupIndex].get(bestCandidate.key) || 0) + 1);
+          assignments.push({ ...job, candidate: bestCandidate });
+        });
+        const finalScore = scheduleScore(coverage, target, weights, minimumStaffing);
+        if (!best || finalScore < best.score) best = { assignments, coverage, score: finalScore };
+      }
+      return best;
+    }
+
+    function nextGeneratedNumber(prefix, start, usedNumbers) {
+      let number = Math.max(0, Math.floor(start));
+      while (usedNumbers.has(`${prefix}${number}`.toLowerCase())) number++;
+      const value = `${prefix}${number}`;
+      usedNumbers.add(value.toLowerCase());
+      return { value, next: number + 1 };
+    }
+
+    function assignmentToEmployee(assignment, group, employeeNumber) {
+      const startMinutes = timeToMinutes(group.start);
+      const schedule = {};
+      DAYS.forEach((day, dayIndex) => {
+        const duration = assignment.candidate.durations[dayIndex];
+        schedule[day] = {
+          active: duration > 0,
+          start: group.start,
+          end: minutesToTime(startMinutes + duration * 60)
+        };
+      });
+      return normalizeEmployee({
+        id: uid(),
+        employeeNumber,
+        name: "",
+        shift: classifyGeneratedShift(group.start, group.shift, group.hours),
+        schedule
+      });
+    }
+
+    function runSmartGenerator() {
+      const groups = getGeneratorGroups().filter(group => group.count > 0);
+      if (!groups.length) {
+        alert("Add at least one shift pattern group.");
+        return;
+      }
+      const mode = el("generatorMode").value;
+      const minimumStaffing = Math.max(0, Number(el("generatorMinimumStaffing").value) || 0);
+      const totalEmployees = groups.reduce((sum, group) => sum + group.count, 0);
+      if (totalEmployees > 250) {
+        alert("The generator is limited to 250 employees per run.");
+        return;
+      }
+      const button = el("runGeneratorBtn");
+      button.disabled = true;
+      button.textContent = "Generating…";
+      setTimeout(() => {
+        try {
+          if (el("saveBeforeGenerate").checked && state.employees.length) saveVersion(`Before smart generation · ${new Date().toLocaleString()}`);
+          const existingEmployees = mode === "merge" ? state.employees.slice() : [];
+          const optimized = optimizeGeneratedAssignments(
+            groups,
+            existingEmployees,
+            el("generatorPriority").value,
+            el("generatorPatternStyle").value,
+            minimumStaffing,
+            Math.max(1, Number(el("generatorAttempts").value) || 10)
+          );
+          const usedNumbers = new Set(existingEmployees.map(employee => String(employee.employeeNumber).trim().toLowerCase()));
+          const prefix = el("generatorNumberPrefix").value.trim();
+          let nextNumber = Number(el("generatorStartNumber").value) || 0;
+          const generated = optimized.assignments
+            .sort((a,b) => a.groupIndex - b.groupIndex || a.employeeIndex - b.employeeIndex)
+            .map(assignment => {
+              const generatedNumber = nextGeneratedNumber(prefix, nextNumber, usedNumbers);
+              nextNumber = generatedNumber.next;
+              return assignmentToEmployee(assignment, groups[assignment.groupIndex], generatedNumber.value);
+            });
+          state.employees = mode === "merge" ? [...state.employees, ...generated] : generated;
+          state.minimumStaffing = minimumStaffing;
+          state.selectedDay = 0;
+          const allRanges = [];
+          for (let day = 0; day < 7; day++) for (let block = 0; block < 12; block++) allRanges.push(staffingRange(state, day, block * 120, (block + 1) * 120).min);
+          const lowestCoverage = Math.min(...allRanges);
+          const peakCoverage = Math.max(...allRanges);
+          state.generationInfo = {
+            generatedAt: new Date().toISOString(),
+            prompt: el("generatorPrompt").value.trim(),
+            priority: el("generatorPriority").value,
+            patternStyle: el("generatorPatternStyle").value,
+            employeeCount: generated.length,
+            lowestCoverage,
+            peakCoverage
+          };
+          scheduleViewMode = "weekly";
+          renderAll();
+          el("generatorDialog").close();
+          toast(`Generated ${generated.length} employees · coverage ${lowestCoverage} to ${peakCoverage}`);
+        } catch (error) {
+          console.error(error);
+          alert(error.message || "The schedule could not be generated.");
+        } finally {
+          button.disabled = false;
+          button.textContent = "✦ Generate draft";
+        }
+      }, 30);
+    }
+
+    function openGeneratorDialog() {
+      el("generatorResult").hidden = true;
+      if (!el("generatorGroups").children.length) {
+        addGeneratorGroup({ count: 3, hours: 12, days: 3, start: "06:00", extraHours: 4 });
+        addGeneratorGroup({ count: 3, hours: 12, days: 3, start: "18:00", extraHours: 4 });
+        addGeneratorGroup({ count: 3, hours: 8, days: 5, start: "06:00" });
+        addGeneratorGroup({ count: 3, hours: 8, days: 5, start: "14:00" });
+        addGeneratorGroup({ count: 3, hours: 8, days: 5, start: "22:00" });
+      }
+      el("generatorMinimumStaffing").value = Number(state.minimumStaffing) || 3;
+      updateGeneratorSummary();
+      el("generatorDialog").showModal();
+    }
+
+
     function exportFileBaseName() {
       const title = String(el("exportSnapshotName")?.value || "Draft Schedule").trim() || "Draft Schedule";
       return title.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase() || "draft-schedule";
@@ -2463,6 +3100,9 @@
           ["Exported", new Date().toLocaleString()],
           ["Employee Count", state.employees.length],
           ["Low Staffing Threshold", Number(state.minimumStaffing) || 0],
+          ["Generated By", state.generationInfo ? "Smart schedule generator" : "Manual or imported draft"],
+          ["Generation Priority", state.generationInfo?.priority || ""],
+          ["Generation Notes", state.generationInfo?.prompt || ""],
           [],
           ["Shift Group", "Employee Count"],
           ["Days", shiftCounts.Days || 0],
@@ -2525,7 +3165,7 @@
       doc.setFontSize(14);
       doc.text(title, 34, 49);
       if (subtitle) {
-        doc.setTextColor(220, 214, 232);
+        doc.setTextColor(80, 72, 95);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
         doc.text(subtitle, width - 34, 49, { align: "right" });
@@ -3035,8 +3675,8 @@
 
     function downloadExcelTemplate() {
       const anchor = document.createElement("a");
-      anchor.href = "schedule_import_template_v4.xlsx";
-      anchor.download = "schedule_import_template_v4.xlsx";
+      anchor.href = "schedule_import_template_v3.xlsx";
+      anchor.download = "schedule_import_template_v3.xlsx";
       anchor.click();
     }
 
@@ -3126,6 +3766,14 @@
     });
 
     el("compareBtn").addEventListener("click", compareSchedules);
+    el("smartGenerateBtn").addEventListener("click", openGeneratorDialog);
+    el("smartGenerateSidebarBtn").addEventListener("click", openGeneratorDialog);
+    el("closeGeneratorDialog").addEventListener("click", () => el("generatorDialog").close());
+    el("cancelGeneratorBtn").addEventListener("click", () => el("generatorDialog").close());
+    el("addGeneratorGroupBtn").addEventListener("click", () => addGeneratorGroup());
+    el("interpretGeneratorBtn").addEventListener("click", interpretGeneratorDescription);
+    el("generatorExampleBtn").addEventListener("click", loadGeneratorExample);
+    el("runGeneratorBtn").addEventListener("click", runSmartGenerator);
     el("loadDemoBtn").addEventListener("click", loadDemo);
     el("dailyViewBtn").addEventListener("click", () => {
       scheduleViewMode = "daily";
@@ -3191,7 +3839,7 @@
 
     el("clearBtn").addEventListener("click", () => {
       if (!confirm("Clear the current draft? Saved versions will remain available.")) return;
-      state = { employees: [], selectedDay: 0, minimumStaffing: 3 };
+      state = { employees: [], selectedDay: 0, minimumStaffing: 3, generationInfo: null };
       renderAll();
       toast("Draft cleared");
     });
