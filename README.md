@@ -1,38 +1,39 @@
-# 24/7 Staffing Scheduler
+[README.md](https://github.com/user-attachments/files/30368894/README.md)
+# SHIFT//SYNTH Staffing Scheduler V3
 
-A standalone browser app for building and comparing weekly staffing plans.
+This version keeps the retro vaporwave look while making the interface easier to read.
 
-## Features
+## Main changes
 
-- Add, edit, and remove employees
-- Assign employees to Days, Swings, Graves, or Custom shift groups
-- Select each employee's workdays
-- Set a default start and end time
-- Override start and end times for individual days
-- View every day from 6:00 AM through 6:00 AM the next day
-- See overnight shifts and carryover coverage
-- View minimum staffing for each two hour block
-- Set a low staffing threshold
-- Save schedule snapshots
-- Compare the staffing difference between two schedules
-- Export and import all data as JSON
-- Automatic local draft saving in the browser
+• Larger standard text and stronger contrast
+• Fewer glow effects and no moving panel effects
+• Simpler buttons, cards, schedule rows, and staffing blocks
+• Employee Number is now the required employee identifier
+• Names are optional and are only shown as a secondary note
+• Timeline rows and schedule labels use employee numbers
+• Excel and CSV imports can use Employee Number, Employee ID, Badge Number, Number, or ID
+• Import merging matches employees by number rather than by name
+• Older saved data is migrated so it can still open
 
-## Run it
+## Spreadsheet import
 
-Open `index.html` in a modern browser.
+The easiest spreadsheet layout uses these columns:
 
-No server, installation, or build tools are required.
+Employee Number | Optional Name | Shift | Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
 
-## Put it on GitHub Pages
+The Optional Name column can be completely blank or left out.
 
-1. Create a new GitHub repository.
-2. Upload `index.html` and this README.
-3. Open the repository settings.
-4. Select **Pages**.
-5. Publish from the `main` branch and the root folder.
-6. Open the GitHub Pages address that GitHub provides.
+Weekday cells may contain values such as:
 
-## Data storage
+• 6:00 AM-2:00 PM
+• 6a-2p
+• 0600-1400
+• OFF
 
-The current draft and saved versions are stored in the browser's local storage. Use **Export** to make a backup or transfer the schedule to another device.
+The included `schedule_import_template_v3.xlsx` file is ready to use.
+
+## Run the app
+
+Open `SHIFT_SYNTH_SCHEDULER_V3.html` or `index.html` in a modern browser.
+
+The current draft and saved versions are stored in that browser. Use Export Backup to save a portable JSON backup.
