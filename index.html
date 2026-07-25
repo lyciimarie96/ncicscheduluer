@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SHIFT//SYNTH Scheduler V2</title>
+  <title>SHIFT//SYNTH Scheduler V3</title>
   <style>
     :root {
       --bg: #0b1020;
@@ -1039,17 +1039,183 @@
       .build-badge { right: 12px; font-size: .58rem; }
     }
 
+    /* V3 CLEARWAVE: vaporwave character with reduced visual noise and stronger readability */
+    :root {
+      --bg: #100d1d;
+      --panel: #1b1730;
+      --panel-2: #24203b;
+      --panel-3: #30294b;
+      --text: #fbf9ff;
+      --muted: #c9c2d8;
+      --line: #51496b;
+      --accent: #62e6f5;
+      --accent-2: #f28bdc;
+      --shadow: 0 14px 34px rgba(0,0,0,.28);
+      --radius: 14px;
+      --label-width: 178px;
+    }
+
+    *, *::before, *::after { animation: none !important; }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(111,91,155,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(111,91,155,.07) 1px, transparent 1px),
+        radial-gradient(circle at 18% 0%, rgba(90,220,239,.12), transparent 30%),
+        radial-gradient(circle at 88% 0%, rgba(242,139,220,.11), transparent 28%);
+      background-size: 44px 44px, 44px 44px, auto, auto;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    body::before, body::after, .app-shell::before, .app-shell::after,
+    .panel::after, .btn::after { display: none !important; }
+
+    .app-shell { width: min(1740px, calc(100% - 28px)); padding-top: 28px; }
+
+    header.hero {
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      background: linear-gradient(105deg, #211a3b, #17142a 58%, #24183a);
+      border: 1px solid #66567f;
+      box-shadow: var(--shadow);
+    }
+
+    .build-badge {
+      top: 0;
+      right: 24px;
+      color: #20142d;
+      background: linear-gradient(90deg, #7deaf5, #f2a1df);
+      box-shadow: none;
+      border-radius: 0 0 8px 8px;
+      font-family: inherit;
+      letter-spacing: .06em;
+    }
+
+    .brand-mark { opacity: .72; filter: none; }
+    .eyebrow { color: #d8d0e6; font-family: inherit; letter-spacing: .055em; font-size: .72rem; }
+    h1 {
+      font-family: inherit;
+      font-style: normal;
+      letter-spacing: -.025em;
+      text-transform: none;
+      font-size: clamp(1.85rem, 2.7vw, 2.85rem);
+      line-height: 1.08;
+      text-shadow: none;
+      margin-top: 7px;
+    }
+    h1 .neon { color: #86edf7; -webkit-text-stroke: 0; }
+    h1 .slash { color: #f2a1df; }
+    h2, h3 {
+      font-family: inherit;
+      text-transform: none;
+      letter-spacing: 0;
+      color: #fff;
+    }
+    .panel-head h2::before, .staffing-section h3::before { content: ""; }
+    .subtitle, .muted, .helper, .employee-meta, .row-label span, .staff-time, .staff-range, .version-card span { color: var(--muted); }
+    .subtitle { font-size: .96rem; }
+    .helper { font-size: .9rem; }
+
+    .btn, .icon-button, .day-tab, input, select {
+      font-family: inherit;
+      text-transform: none;
+      letter-spacing: 0;
+      border-radius: 9px;
+    }
+    .btn {
+      min-height: 42px;
+      padding: 10px 15px;
+      font-size: .88rem;
+      font-weight: 700;
+      background: #30294b;
+      border: 1px solid #5d5277;
+      box-shadow: none;
+    }
+    .btn:hover { border-color: #8b7ca8; box-shadow: none; }
+    .btn.primary { background: #72dfed; border-color: #9aedf5; color: #181125; box-shadow: none; }
+    .btn.success { background: #ef9bdc; border-color: #f5b5e7; color: #211328; box-shadow: none; }
+    .btn.danger { background: #402039; border-color: #8b466d; color: #ffddec; }
+    input, select { min-height: 43px; background: #151226; border-color: #5a506f; padding: 10px 12px; font-size: .94rem; }
+    input:focus, select:focus { border-color: #78e2ef; box-shadow: 0 0 0 3px rgba(98,230,245,.14); }
+
+    .layout { grid-template-columns: 370px minmax(0, 1fr); gap: 18px; }
+    .panel {
+      background: #1b1730;
+      border: 1px solid #51496b;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .panel::before { width: 100%; height: 3px; background: linear-gradient(90deg,#63e5f3,#a38af5,#ef91d9); box-shadow: none; }
+    .panel-head { padding: 18px 19px 15px; background: #211c38; }
+    .panel-body { padding: 17px 19px 20px; }
+
+    .employee-card, .version-card, .kpi, .staff-cell, .empty, .import-card {
+      background: #211c38;
+      border: 1px solid #4f4669;
+      border-radius: 10px;
+      box-shadow: none;
+    }
+    .employee-card:hover, .version-card:hover { transform: none; border-color: #796b98; box-shadow: none; }
+    .employee-card { padding: 13px; }
+    .employee-name { font-size: 1.02rem; color: #fff; text-shadow: none; }
+    .employee-meta { font-size: .84rem; }
+    .employee-color { border-radius: 4px; box-shadow: none; }
+    .kpi strong { color: #fff; text-shadow: none; }
+    .kpi::after { height: 1px; opacity: .55; }
+
+    .day-tabs { gap: 8px; padding: 16px 17px 2px; }
+    .day-tab { min-height: 40px; padding: 9px 14px; background: #19152b; border-color: #554b6d; color: #d8d1e5; font-size: .86rem; }
+    .day-tab.active { background: #7ce6f1; border-color: #a3f0f7; color: #171023; box-shadow: none; }
+
+    .schedule-scroll { padding: 15px 17px 19px; }
+    .schedule { background: #121020; border: 1px solid #534a6b; border-radius: 10px; box-shadow: none; }
+    .timeline-header { background: #27203e; min-height: 50px; }
+    .timeline-title { color: #eee9f6; font-size: .78rem; letter-spacing: .045em; }
+    .time-label { color: #eee8f8; font-size: .78rem; border-color: #554b6c; }
+    .schedule-row { min-height: 59px; border-color: #403852; }
+    .row-label { background: #19162a; }
+    .row-label strong { font-size: .94rem; color: #fff; }
+    .bar-lane { background-color: #121020; background-image: linear-gradient(to right, rgba(116,102,149,.32) 1px, transparent 1px); }
+    .shift-bar { top: 10px; height: 38px; border-radius: 7px; box-shadow: none; border: 1px solid rgba(255,255,255,.45); font-size: .78rem; text-shadow: none; }
+
+    .staffing-section { padding: 18px; }
+    .staffing-grid { gap: 9px; }
+    .staff-cell { padding: 11px 8px; }
+    .staff-cell.low { border-color: #98516f; background: #382032; box-shadow: none; }
+    .staff-cell.good { border-color: #397f78; background: #193b3a; }
+    .staff-count { color: #fff !important; text-shadow: none; font-size: 1.45rem; }
+    .staff-time { font-size: .74rem; color: #e3ddec; }
+
+    dialog { background: #1b1730; border: 1px solid #75678f; border-radius: 14px; box-shadow: 0 25px 75px rgba(0,0,0,.5); }
+    .modal-head { background: #26203d; }
+    .import-stat { background: #2a203c; border-color: #665078; border-radius: 9px; }
+    .import-stat strong { color: #fff; }
+    .format-chip { border-left-color: #ef91d9; background: #271d39; font-size: .84rem; }
+    .preview-table-wrap { border-color: #574d6d; border-radius: 9px; }
+    table { background: #171326; }
+    th { background: #30264a; color: #fff; }
+    td:first-child, th:first-child { background: #30264a; }
+    th, td { padding: 10px; font-size: .82rem; border-color: #4c435f; }
+    .toast { border-radius: 9px; font-family: inherit; text-transform: none; letter-spacing: 0; font-size: .88rem; background: linear-gradient(90deg,#7deaf5,#f2a1df); box-shadow: var(--shadow); }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+
+
   </style>
 </head>
 <body>
   <div class="app-shell">
-    <header class="hero"><div class="build-badge">V2 // NEON BUILD</div>
+    <header class="hero"><div class="build-badge">V3 // CLEARWAVE BUILD</div>
       <div class="brand-lockup">
         <div class="brand-mark" aria-hidden="true"></div>
         <div>
-          <div class="eyebrow"><span class="status-dot"></span>SHIFT//SYNTH DESIGN CONSOLE · V2 NEON BUILD · SYSTEM ONLINE</div>
+          <div class="eyebrow"><span class="status-dot"></span>SHIFT//SYNTH SCHEDULE CONSOLE · CLEARWAVE BUILD · SYSTEM ONLINE</div>
           <h1><span class="neon">24/7</span> Staffing <span class="slash">//</span> Scheduler</h1>
-          <p class="subtitle">Build shift bid options, inspect hourly coverage, and compare alternate staffing timelines.</p>
+          <p class="subtitle">Build shift bid options, read coverage quickly, and compare alternate staffing timelines.</p>
         </div>
       </div>
       <div class="header-actions">
@@ -1064,10 +1230,10 @@
       <section class="panel">
         <div class="panel-head">
           <div>
-            <h2>Employees</h2>
+            <h2>Employee numbers</h2>
             <div class="muted" id="employeeCount">0 employees</div>
           </div>
-          <button class="btn primary" id="addEmployeeBtn">＋ Add employee</button>
+          <button class="btn primary" id="addEmployeeBtn">＋ Add employee number</button>
         </div>
         <div class="panel-body">
           <div class="kpi-row">
@@ -1077,7 +1243,7 @@
           </div>
           <div class="roster-list" id="rosterList"></div>
           <div class="button-row" style="margin-top:12px">
-            <button class="btn" id="loadDemoBtn">Load simulation crew</button>
+            <button class="btn" id="loadDemoBtn">Load sample numbers</button>
           </div>
         </div>
       </section>
@@ -1086,7 +1252,7 @@
         <div class="panel-head">
           <div>
             <h2>Weekly coverage</h2>
-            <div class="muted">Each view runs from 6:00 AM to 6:00 AM the next day.</div>
+            <div class="muted">Each view covers 6:00 AM through 6:00 AM the next day.</div>
           </div>
           <div class="field" style="min-width:165px">
             <label for="minimumStaffing">Low staffing threshold</label>
@@ -1108,7 +1274,7 @@
 
         <div class="staffing-section">
           <h3>Staffing by two hour block</h3>
-          <p class="helper">The large number is the minimum staffing level during that block. When staffing changes inside the block, the maximum is also shown.</p>
+          <p class="helper">The large number shows the lowest staffing during the block. A maximum appears only when coverage changes inside that block.</p>
           <div class="staffing-grid" id="staffingGrid"></div>
         </div>
       </section>
@@ -1165,8 +1331,12 @@
       <div class="modal-body">
         <div class="form-grid">
           <div class="field">
-            <label for="employeeName">Employee name</label>
-            <input id="employeeName" required maxlength="80" placeholder="Name" />
+            <label for="employeeNumber">Employee number</label>
+            <input id="employeeNumber" required maxlength="40" placeholder="Example: 1042" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="employeeName">Optional name or note</label>
+            <input id="employeeName" maxlength="80" placeholder="Optional" autocomplete="off" />
           </div>
           <div class="field">
             <label for="employeeShift">Shift group</label>
@@ -1219,7 +1389,7 @@
           <label for="versionName">Version name</label>
           <input id="versionName" required maxlength="80" placeholder="Example: Bid option A" />
         </div>
-        <p class="helper" style="margin-top:10px">This saves a snapshot of the employee list, workdays, and shift times.</p>
+        <p class="helper" style="margin-top:10px">This saves a snapshot of the employee numbers, workdays, and shift times.</p>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn" id="cancelSaveBtn">Cancel</button>
@@ -1265,7 +1435,7 @@
                 <label for="importMode">Import behavior</label>
                 <select id="importMode">
                   <option value="replace">Replace current draft</option>
-                  <option value="merge">Merge by employee name</option>
+                  <option value="merge">Merge by employee number</option>
                 </select>
               </div>
             </div>
@@ -1284,10 +1454,10 @@
           <div class="import-card">
             <h3>Recognized formats</h3>
             <div class="format-list">
-              <div class="format-chip"><strong>Weekday grid:</strong> Employee, Shift, Monday, Tuesday… with cells such as <code>6a-2p</code> or <code>OFF</code>.</div>
-              <div class="format-chip"><strong>Wide times:</strong> Employee, Monday Start, Monday End, Tuesday Start, Tuesday End…</div>
-              <div class="format-chip"><strong>Daily rows:</strong> Employee, Shift, Day, Start, End.</div>
-              <div class="format-chip"><strong>Days list:</strong> Employee, Shift, Days, Start, End with values such as <code>Mon-Fri</code>.</div>
+              <div class="format-chip"><strong>Weekday grid:</strong> Employee Number, Shift, Monday, Tuesday… with cells such as <code>6a-2p</code> or <code>OFF</code>.</div>
+              <div class="format-chip"><strong>Wide times:</strong> Employee Number, Monday Start, Monday End, Tuesday Start, Tuesday End…</div>
+              <div class="format-chip"><strong>Daily rows:</strong> Employee Number, Shift, Day, Start, End.</div>
+              <div class="format-chip"><strong>Days list:</strong> Employee Number, Shift, Days, Start, End with values such as <code>Mon-Fri</code>.</div>
             </div>
             <div class="button-row" style="margin-top:12px">
               <button type="button" class="btn" id="downloadTemplateBtn">Download Excel template</button>
@@ -1379,9 +1549,16 @@
 
     function normalizeEmployee(employee) {
       const preset = SHIFT_PRESETS[employee.shift] || SHIFT_PRESETS.Custom;
+      const legacyName = String(employee.name ?? "").trim();
+      const rawNumber = employee.employeeNumber ?? employee.number ?? employee.employeeId ?? employee.identifier ?? legacyName;
+      const employeeNumber = String(rawNumber ?? "").trim() || "UNASSIGNED";
+      const optionalName = employee.employeeNumber || employee.number || employee.employeeId || employee.identifier
+        ? legacyName
+        : String(employee.optionalName ?? employee.displayName ?? "").trim();
       const normalized = {
         id: employee.id || uid(),
-        name: employee.name || "Unnamed employee",
+        employeeNumber,
+        name: optionalName,
         shift: employee.shift || "Custom",
         schedule: employee.schedule || blankWeek(preset.start, preset.end)
       };
@@ -1391,6 +1568,15 @@
         }
       });
       return normalized;
+    }
+
+    function employeeLabel(employee) {
+      const number = String(employee.employeeNumber ?? "UNASSIGNED").trim();
+      return number.startsWith("#") ? number : `#${number}`;
+    }
+
+    function compareEmployeeNumbers(a, b) {
+      return String(a.employeeNumber).localeCompare(String(b.employeeNumber), undefined, { numeric: true, sensitivity: "base" });
     }
 
     function safeStorageGet(key, fallback = null) {
@@ -1470,7 +1656,9 @@
             if (overlapStart < overlapEnd) {
               segments.push({
                 employeeId: employee.id,
+                employeeNumber: employee.employeeNumber,
                 name: employee.name,
+                label: employeeLabel(employee),
                 shift: employee.shift,
                 color: employeeColor(employee.shift),
                 originalDayIndex: scheduleDayIndex,
@@ -1490,7 +1678,7 @@
 
       return segments.sort((a,b) =>
         a.startOffset - b.startOffset ||
-        a.name.localeCompare(b.name)
+        String(a.employeeNumber).localeCompare(String(b.employeeNumber), undefined, { numeric: true, sensitivity: "base" })
       );
     }
 
@@ -1573,13 +1761,13 @@
 
       const list = el("rosterList");
       if (!state.employees.length) {
-        list.innerHTML = `<div class="empty">No employees yet. Add an employee or load the example staff.</div>`;
+        list.innerHTML = `<div class="empty">No employee numbers yet. Add one or load the sample numbers.</div>`;
         return;
       }
 
       list.innerHTML = state.employees
         .slice()
-        .sort((a,b) => a.name.localeCompare(b.name))
+        .sort(compareEmployeeNumbers)
         .map(employee => {
           const active = DAYS.filter(day => employee.schedule[day]?.active);
           const sampleDay = active[0];
@@ -1590,8 +1778,8 @@
             <div class="employee-card">
               <div class="employee-color" style="background:${employeeColor(employee.shift)}"></div>
               <div>
-                <div class="employee-name">${escapeHtml(employee.name)}</div>
-                <div class="employee-meta">${escapeHtml(employee.shift)} · ${escapeHtml(timeText)}<br>${active.length ? active.map(d => d.slice(0,3)).join(", ") : "Off all week"}</div>
+                <div class="employee-name">${escapeHtml(employeeLabel(employee))}</div>
+                <div class="employee-meta">${employee.name ? `${escapeHtml(employee.name)} · ` : ""}${escapeHtml(employee.shift)} · ${escapeHtml(timeText)}<br>${active.length ? active.map(d => d.slice(0,3)).join(", ") : "Off all week"}</div>
               </div>
               <div class="button-row" style="gap:5px">
                 <button class="icon-button" title="Edit" onclick="openEmployeeDialog('${employee.id}')">✎</button>
@@ -1623,12 +1811,12 @@
       ).join("");
 
       const segments = getShiftSegmentsForWindow(state, state.selectedDay);
-      el("timelineTitle").textContent = `${DAYS[state.selectedDay]} employees`;
+      el("timelineTitle").textContent = `${DAYS[state.selectedDay]} employee numbers`;
 
       if (!segments.length) {
         el("scheduleRows").innerHTML = `
           <div class="schedule-row">
-            <div class="row-label"><strong>No coverage</strong><span>Add or edit employee workdays</span></div>
+            <div class="row-label"><strong>No coverage</strong><span>Add or edit employee number workdays</span></div>
             <div class="bar-lane"></div>
           </div>
         `;
@@ -1643,13 +1831,13 @@
           return `
             <div class="schedule-row">
               <div class="row-label">
-                <strong>${escapeHtml(segment.name)}</strong>
+                <strong>${escapeHtml(segment.label)}</strong>
                 <span>${escapeHtml(segment.shift)}${carry}</span>
               </div>
               <div class="bar-lane">
                 <div class="shift-bar"
                   style="left:${left}%;width:${width}%;background:${segment.color}"
-                  title="${escapeHtml(segment.name)}: ${formatTime(segment.startTime)} to ${formatTime(segment.endTime)}">
+                  title="${escapeHtml(segment.label)}${segment.name ? ` · ${escapeHtml(segment.name)}` : ""}: ${formatTime(segment.startTime)} to ${formatTime(segment.endTime)}">
                   ${visibleLabel}
                 </div>
               </div>
@@ -1703,13 +1891,15 @@
       const preset = SHIFT_PRESETS[shift] || SHIFT_PRESETS.Custom;
       const employee = existing ? deepClone(existing) : {
         id: uid(),
+        employeeNumber: "",
         name: "",
         shift,
         schedule: blankWeek(preset.start, preset.end)
       };
 
-      el("employeeDialogTitle").textContent = existing ? "Edit employee" : "Add employee";
-      el("employeeName").value = employee.name;
+      el("employeeDialogTitle").textContent = existing ? "Edit employee number" : "Add employee number";
+      el("employeeNumber").value = employee.employeeNumber === "UNASSIGNED" ? "" : employee.employeeNumber;
+      el("employeeName").value = employee.name || "";
       el("employeeShift").value = employee.shift;
 
       const firstActiveDay = DAYS.find(day => employee.schedule[day].active) || DAYS[0];
@@ -1717,7 +1907,7 @@
       el("defaultEnd").value = employee.schedule[firstActiveDay].end || preset.end;
       renderWorkdayControls(employee);
       el("employeeDialog").showModal();
-      setTimeout(() => el("employeeName").focus(), 50);
+      setTimeout(() => el("employeeNumber").focus(), 50);
     }
 
     window.openEmployeeDialog = openEmployeeDialog;
@@ -1725,7 +1915,7 @@
     function removeEmployee(employeeId) {
       const employee = state.employees.find(item => item.id === employeeId);
       if (!employee) return;
-      if (!confirm(`Remove ${employee.name} from the draft schedule?`)) return;
+      if (!confirm(`Remove ${employeeLabel(employee)} from the draft schedule?`)) return;
       state.employees = state.employees.filter(item => item.id !== employeeId);
       renderAll();
       toast("Employee removed");
@@ -1856,16 +2046,17 @@
     function loadDemo() {
       if (state.employees.length && !confirm("Replace the current employee draft with example staff?")) return;
       const demo = [
-        { name:"Jordan", shift:"Days", start:"06:00", end:"14:00", days:[0,1,2,3,4] },
-        { name:"Casey", shift:"Days", start:"08:00", end:"18:00", days:[0,1,2,3] },
-        { name:"Morgan", shift:"Swings", start:"14:00", end:"22:00", days:[0,1,2,3,4] },
-        { name:"Taylor", shift:"Swings", start:"12:00", end:"22:00", days:[2,3,4,5] },
-        { name:"Riley", shift:"Graves", start:"20:00", end:"06:00", days:[0,1,2,3] },
-        { name:"Avery", shift:"Graves", start:"22:00", end:"08:00", days:[3,4,5,6] }
+        { employeeNumber:"101", shift:"Days", start:"06:00", end:"14:00", days:[0,1,2,3,4] },
+        { employeeNumber:"102", shift:"Days", start:"08:00", end:"18:00", days:[0,1,2,3] },
+        { employeeNumber:"201", shift:"Swings", start:"14:00", end:"22:00", days:[0,1,2,3,4] },
+        { employeeNumber:"202", shift:"Swings", start:"12:00", end:"22:00", days:[2,3,4,5] },
+        { employeeNumber:"301", shift:"Graves", start:"20:00", end:"06:00", days:[0,1,2,3] },
+        { employeeNumber:"302", shift:"Graves", start:"22:00", end:"08:00", days:[3,4,5,6] }
       ];
       state.employees = demo.map(item => ({
         id: uid(),
-        name: item.name,
+        employeeNumber: item.employeeNumber,
+        name: "",
         shift: item.shift,
         schedule: blankWeek(item.start, item.end, item.days)
       }));
@@ -1943,7 +2134,7 @@
     }
 
     function normalizeHeader(value) {
-      return String(value ?? "").toLowerCase().trim().replace(/[^a-z0-9]+/g, " ").trim();
+      return String(value ?? "").toLowerCase().replace(/#/g, " number ").trim().replace(/[^a-z0-9]+/g, " ").trim();
     }
 
     function compactHeader(value) {
@@ -1951,7 +2142,9 @@
     }
 
     const HEADER_ALIASES = {
-      employee: ["employee","employee name","name","staff","staff name","operator","person","member"],
+      employeeNumber: ["employee number","employee no","employee id","employee identifier","emp number","emp no","emp id","staff number","staff no","staff id","operator number","operator no","operator id","badge","badge number","number","id"],
+      employeeName: ["employee name","optional name","name","staff name","operator name"],
+      employee: ["employee","staff","operator","person","member"],
       shift: ["shift","shift group","shift type","assignment","tour"],
       day: ["day","weekday","work day","scheduled day"],
       days: ["days","workdays","work days","scheduled days","schedule days"],
@@ -1990,7 +2183,11 @@
 
     function inspectLayout(rows, headerIndex) {
       const headers = rows[headerIndex] || [];
-      const employeeCol = aliasIndex(headers, HEADER_ALIASES.employee);
+      const employeeNumberCol = aliasIndex(headers, HEADER_ALIASES.employeeNumber);
+      const employeeNameCol = aliasIndex(headers, HEADER_ALIASES.employeeName);
+      const genericEmployeeCol = aliasIndex(headers, HEADER_ALIASES.employee);
+      const employeeCol = employeeNumberCol >= 0 ? employeeNumberCol : (genericEmployeeCol >= 0 ? genericEmployeeCol : employeeNameCol);
+      const optionalNameCol = employeeNameCol >= 0 && employeeNameCol !== employeeCol ? employeeNameCol : -1;
       const shiftCol = aliasIndex(headers, HEADER_ALIASES.shift);
       const dayCol = aliasIndex(headers, HEADER_ALIASES.day);
       const daysCol = aliasIndex(headers, HEADER_ALIASES.days);
@@ -2019,7 +2216,7 @@
       else if (employeeCol >= 0 && dayCol >= 0 && startCol >= 0 && endCol >= 0) detected = "long";
       else if (employeeCol >= 0 && daysCol >= 0 && startCol >= 0 && endCol >= 0) detected = "days";
 
-      return { headers, employeeCol, shiftCol, dayCol, daysCol, startCol, endCol, gridDays, wideDays, detected, gridCount, wideCount };
+      return { headers, employeeCol, employeeNumberCol, employeeNameCol, optionalNameCol, shiftCol, dayCol, daysCol, startCol, endCol, gridDays, wideDays, detected, gridCount, wideCount };
     }
 
     function twoDigits(number) { return String(number).padStart(2, "0"); }
@@ -2099,31 +2296,34 @@
     function buildImportedEmployees(rows, headerIndex, selectedLayout) {
       const inspection = inspectLayout(rows, headerIndex);
       const layout = selectedLayout === "auto" ? inspection.detected : selectedLayout;
-      if (inspection.employeeCol < 0) throw new Error("No Employee or Name column was found.");
+      if (inspection.employeeCol < 0) throw new Error("No Employee Number, Employee ID, or Employee column was found.");
       if (layout === "unknown") throw new Error("The schedule layout could not be detected. Check the header row or choose a layout manually.");
 
       const employees = new Map();
       let parsedAssignments = 0, skippedRows = 0;
-      function getEmployee(name, rawShift, fallbackStart = null) {
-        const cleanName = String(name ?? "").trim();
-        if (!cleanName) return null;
-        const key = cleanName.toLowerCase();
+      function getEmployee(identifier, rawShift, fallbackStart = null, optionalName = "") {
+        const cleanNumber = String(identifier ?? "").trim();
+        if (!cleanNumber) return null;
+        const key = cleanNumber.toLowerCase();
         if (!employees.has(key)) {
           const shift = normalizeShift(rawShift, fallbackStart);
           const preset = SHIFT_PRESETS[shift] || SHIFT_PRESETS.Custom;
-          employees.set(key, { id: uid(), name: cleanName, shift, schedule: blankWeek(preset.start, preset.end, []) });
+          employees.set(key, { id: uid(), employeeNumber: cleanNumber, name: String(optionalName ?? "").trim(), shift, schedule: blankWeek(preset.start, preset.end, []) });
+        } else if (optionalName && !employees.get(key).name) {
+          employees.get(key).name = String(optionalName).trim();
         }
         return employees.get(key);
       }
 
       rows.slice(headerIndex + 1).forEach(row => {
-        const name = row[inspection.employeeCol];
-        if (String(name ?? "").trim() === "") return;
+        const identifier = row[inspection.employeeCol];
+        if (String(identifier ?? "").trim() === "") return;
+        const optionalName = inspection.optionalNameCol >= 0 ? row[inspection.optionalNameCol] : "";
         const rawShift = inspection.shiftCol >= 0 ? row[inspection.shiftCol] : "";
         let rowUsed = false;
 
         if (layout === "grid") {
-          const employee = getEmployee(name, rawShift);
+          const employee = getEmployee(identifier, rawShift, null, optionalName);
           if (!employee) return;
           DAYS.forEach(day => {
             const col = inspection.gridDays[day];
@@ -2136,7 +2336,7 @@
             }
           });
         } else if (layout === "wide") {
-          const employee = getEmployee(name, rawShift);
+          const employee = getEmployee(identifier, rawShift, null, optionalName);
           if (!employee) return;
           DAYS.forEach(day => {
             const pair = inspection.wideDays[day];
@@ -2153,7 +2353,7 @@
           const days = parseDaysValue(dayValue);
           const start = parseTimeValue(row[inspection.startCol]), end = parseTimeValue(row[inspection.endCol]);
           if (days.length && start && end) {
-            const employee = getEmployee(name, rawShift, start);
+            const employee = getEmployee(identifier, rawShift, start, optionalName);
             days.forEach(day => employee.schedule[day] = { active:true, start, end });
             parsedAssignments += days.length; rowUsed = true;
           }
@@ -2188,7 +2388,7 @@
       el("detectedStatus").textContent = okay ? "Ready" : "Review";
       el("detectedStatus").className = okay ? "import-success" : "import-warning";
       el("importDetectionMessage").textContent = okay
-        ? `Employee column found. ${inspection.gridCount || inspection.wideCount || "Required"} day fields recognized.`
+        ? `Employee number or ID column found. ${inspection.gridCount || inspection.wideCount || "Required"} day fields recognized.`
         : "Try changing the header row or selecting the spreadsheet layout manually.";
 
       const previewRows = rows.slice(headerIndex, headerIndex + 9);
@@ -2244,11 +2444,12 @@
     }
 
     function mergeImportedEmployees(imported) {
-      const existing = new Map(state.employees.map(employee => [employee.name.trim().toLowerCase(), employee]));
+      const existing = new Map(state.employees.map(employee => [String(employee.employeeNumber).trim().toLowerCase(), employee]));
       imported.forEach(employee => {
-        const key = employee.name.trim().toLowerCase();
+        const key = String(employee.employeeNumber).trim().toLowerCase();
         const current = existing.get(key);
         if (current) {
+          current.name = employee.name || current.name || "";
           current.shift = employee.shift;
           current.schedule = deepClone(employee.schedule);
         } else {
@@ -2262,8 +2463,8 @@
 
     function downloadExcelTemplate() {
       const anchor = document.createElement("a");
-      anchor.href = "schedule_import_template.xlsx";
-      anchor.download = "schedule_import_template.xlsx";
+      anchor.href = "schedule_import_template_v3.xlsx";
+      anchor.download = "schedule_import_template_v3.xlsx";
       anchor.click();
     }
 
@@ -2297,8 +2498,14 @@
 
     el("employeeForm").addEventListener("submit", event => {
       event.preventDefault();
+      const employeeNumber = el("employeeNumber").value.trim();
       const name = el("employeeName").value.trim();
-      if (!name) return;
+      if (!employeeNumber) return;
+      const duplicate = state.employees.find(item => item.id !== editingEmployeeId && String(item.employeeNumber).trim().toLowerCase() === employeeNumber.toLowerCase());
+      if (duplicate) {
+        alert(`Employee number ${employeeNumber} already exists.`);
+        return;
+      }
 
       const schedule = {};
       DAYS.forEach((day,index) => {
@@ -2311,6 +2518,7 @@
 
       const employee = normalizeEmployee({
         id: editingEmployeeId || uid(),
+        employeeNumber,
         name,
         shift: el("employeeShift").value,
         schedule
@@ -2371,7 +2579,7 @@
         const rows = pendingSpreadsheet.sheets[el("importSheet").value] || [];
         const headerIndex = Math.max(0, Number(el("importHeaderRow").value || 1) - 1);
         const result = buildImportedEmployees(rows, headerIndex, el("importLayout").value);
-        if (!result.employees.length) throw new Error("No employee schedules could be read from the selected worksheet.");
+        if (!result.employees.length) throw new Error("No employee number schedules could be read from the selected worksheet.");
 
         if (el("saveBeforeImport").checked && state.employees.length) {
           saveVersion(`Before import · ${new Date().toLocaleString()}`);
